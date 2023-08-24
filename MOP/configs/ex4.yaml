@@ -1,0 +1,71 @@
+NAME: 'ex4'
+
+MODE: '2d'
+
+TRAIN:
+  Epoch: 200
+  Alpha: 0.6
+  OPTIMIZER:
+    TYPE: 'adam'
+    Lr: 0.001
+    WEIGHT_DECAY: 0
+  Out_dim: 2
+  Ray_hidden_dim: 100
+  N_task: 2
+  Ref_point: "2,2"
+  Solver:
+    Cheby:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    LS:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    Utility:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+      Ub: 2.01
+    KL:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    Cosine:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    Cauchy:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    Log:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    Prod:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    AC:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+      Rho: 0.1
+    MC:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+      Rho: 0.1
+    HV:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+      Rho: 100
+    EPO:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    CPMTL:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+      Rho: 100
+
+EVAL: 
+  Flag: True
+  Num_ray_init: 1000
+  Num_ray_test: 600
+  Num_eval: 30
+
+TEST: 
+  Num_ray_init: 1000
+  Num_ray_test: 5
+  Num_eval: 10

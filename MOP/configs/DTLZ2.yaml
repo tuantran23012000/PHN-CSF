@@ -1,0 +1,72 @@
+NAME: 'DTLZ2'
+
+MODE: '3d'
+
+TRAIN:
+  Epoch: 360
+  Alpha: 0.6
+  OPTIMIZER:
+    TYPE: 'adam'
+    Lr: 0.001
+    WEIGHT_DECAY: 0
+  Out_dim: 10
+  Ray_hidden_dim: 200
+  N_task: 3
+  Ref_point: "2,2,2"
+  Solver:
+    Cheby:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    LS:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    Utility:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+      Ub: 2
+    KL:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+    Cosine:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+    Cauchy:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+    Log:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+    Prod:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+    AC:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+      Rho: 0.1
+    MC:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+      Rho: 0.1
+    HV:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+      Rho: 100
+    EPO:
+      Num_hidden_layer: 1
+      Last_activation: 'sigmoid'
+    HVI:
+      Num_hidden_layer: 2
+      Last_activation: 'sigmoid'
+      Head : 8
+      Rho: 200
+
+EVAL:
+  Flag: False
+  Num_ray_init: 1000
+  Num_ray_test: 10
+  Num_eval: 30   
+
+
+TEST:
+  Num_ray_init: 100
+  Num_ray_test: 10

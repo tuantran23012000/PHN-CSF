@@ -1,0 +1,4 @@
+Start training!
+
+
+Training losses per epoch: [0.5425596 6.726462  0.4526273 3.0917976 9.629534  5.730298  1.5787877]

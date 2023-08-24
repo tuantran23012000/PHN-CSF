@@ -1,0 +1,11 @@
+{
+    "optimizer": "Adam", 
+    "batch_size": 32,
+    "lr": 0.001,
+    "hidden_dim": 100,
+    "dataset": "nyuv2",
+    "num_tasks": 2,
+    "algorithm": "ls",
+    "alpha": 0.2,
+    "epochs": 100
+}

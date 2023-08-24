@@ -1,6 +1,6 @@
 
 # A Framework for Pareto Multi Task Learning with Completed Scalarization Functions
-This is the official implementation for [Paper]([paper](https://arxiv.org/abs/2302.12487))  
+This is the official implementation for [Paper](https://arxiv.org/abs/2302.12487)  
 
 <img src="src/1.jpg" alt=”Image” style="width:1200px;height:400px;">
 

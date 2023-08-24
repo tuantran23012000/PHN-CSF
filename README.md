@@ -38,6 +38,14 @@ pip3 install -r requirements.txt
 
 ## Author
 
-TuanTA
+Tran Anh Tuan
 
-## License
+## Citation
+```
+@article{tran2023framework,
+  title={A framework for controllable pareto front learning with completed scalarization functions and its applications},
+  author={Tran, Tuan Anh and Hoang, Long Phi and Le, Dung Duy and Tran, Thang Ngoc},
+  journal={arXiv preprint arXiv:2302.12487},
+  year={2023}
+}
+```

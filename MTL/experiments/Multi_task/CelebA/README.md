@@ -1,6 +1,9 @@
-# A Framework for Pareto Multi Task Learning with Completed Scalarization Functions
+# CelebA
+## Information
+Refer to [Website](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
 
-Multi-ResNet-18 architecture
+## Network architecture
+We use Multi-ResNet-18 architecture
 
 <img src="resnet.jpg" alt=”Image” style="width:800px;height:400px;">
 

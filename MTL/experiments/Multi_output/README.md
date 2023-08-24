@@ -1,5 +1,6 @@
-# A Framework for Pareto Multi Task Learning with Completed Scalarization Functions
-
+# SARCOS
+## Information
+Refer to [Website](http://gaussianprocess.org/gpml/data/)
 ## Training
 ```
 python3 phn_train.py --datapath <path dataset> --solver <solver type>

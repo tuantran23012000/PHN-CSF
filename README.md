@@ -5,8 +5,15 @@ This is the official implementation for [Paper](https://arxiv.org/abs/2302.12487
 <img src="src/1.jpg" alt=”Image” style="width:1200px;height:400px;">
 
 Support MOO experiments in `MOP/` with problems:
-- 2D: ex1, ex2, ex4, ZDT1-4
-- 3D: ex3, DTLZ2
+| Problem  | Num of variables      | Num of objectives | Objective function | Pareto-optimal|
+|----------------------|------------------------------|------------------------------|------------------------------|------------------------------|
+| ex1              | 1           |2|convex|convex|
+| ex2               | 2       | 2 | convex | convex|
+| ex3             | 3 | 3 | convex | convex|
+| ex4            |    2         | 2 | convex | convex
+| ZDT1        |       30      |  2  | non-convex | convex |
+| ZDT2         |       30        |  2  | non-convex | non-convex |
+| DTLZ2         |       10         |  3  |non-convex | non-convex |
 
 ex3                   |  DTLZ2
 :-------------------------:|:-------------------------:

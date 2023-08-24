@@ -1,6 +1,9 @@
-# A Framework for Pareto Multi Task Learning with Completed Scalarization Functions
+# NYUv2
+## Information
+Refer to [Website](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)
 
-Multi-SegNet architecture
+## Network architecture
+We useMulti-SegNet architecture
 
 <img src="segnet.jpg" alt=”Image” style="width:600px;height:400px;">
 

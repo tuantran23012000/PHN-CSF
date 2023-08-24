@@ -1,6 +1,6 @@
-# A Framework for Pareto Multi Task Learning with Completed Scalarization Functions
-
-Multi-LeNet architecture
+# Multi-MNIST   
+## Network architecture
+We use Multi-LeNet architecture
 
 <img src="lenet.jpg" alt=”Image” style="width:600px;height:500px;">
 

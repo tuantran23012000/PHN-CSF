@@ -41,6 +41,7 @@ pip3 install -r requirements.txt
 Tran Anh Tuan
 
 ## Citation
+If our framework is useful for your research, please consider to cite the paper:
 ```
 @article{tran2023framework,
   title={A framework for controllable pareto front learning with completed scalarization functions and its applications},

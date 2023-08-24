@@ -20,10 +20,14 @@ ex3                   |  DTLZ2
 ![](src/train_1.gif)  |  ![](src/train_2.gif)
 
 Support MTL experiments in `MTL/experiments/Multi_task/` and `MTL/experiments/Multi_output/` with datasets:
-- Multi-MNIST/Multi-Fashion/Multi-Fash+MNIST 
-- CelebA 
-- NYUv2 
-- SARCOS
+| Dataset  | Num of tasks      | Website |
+|----------------------|------------------------------|------------------------------|
+| Multi-MNIST              | 2           ||
+| Multi-Fashion               | 2       |  | 
+| Multi-Fash+MNIST              | 2 |  |
+| CelebA            |    40         | [link](https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) |
+| NYUv2        |       3      |  [link](https://cs.nyu.edu/~silberman/datasets/nyu_depth_v2.html)  | 
+| SARCOS         |       7        |  [link](http://gaussianprocess.org/gpml/data/)  | 
 
 Multi-MNIST                   |  Multi-Fashion                 |  Multi-Fash+MNIST 
 :-------------------------:|:-----------------------:|:-------------------------:

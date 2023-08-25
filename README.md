@@ -23,10 +23,6 @@ Support MOO experiments in `MOP/` with problems:
 ex3                   |  DTLZ2
 :-------------------------:|:-------------------------:
 ![](src/train_1.gif)  |  ![](src/train_2.gif)
-
-
-ex3                   |  DTLZ2
-:-------------------------:|:-------------------------:
 ![](src/test1.gif)  |  ![](src/test3.gif)
 
 Support MTL experiments in `MTL/experiments/Multi_task/` and `MTL/experiments/Multi_output/` with datasets:

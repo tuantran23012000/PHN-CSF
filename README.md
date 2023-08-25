@@ -10,7 +10,7 @@ This is the official implementation for [Paper](https://arxiv.org/abs/2302.12487
 <img src="src/1.jpg" alt=”Image” style="width:1200px;height:400px;">
 
 Support MOO experiments in `MOP/` with problems:
-| Problem  | Num of variables      | Num of objectives | Objective function | Pareto-optimal|
+| Problem  | Num of variables      | Num of objectives | Objective function | Pareto-optimal| 
 |----------------------|------------------------------|------------------------------|------------------------------|------------------------------|
 | ex1              | 1           |2|convex|convex|
 | ex2               | 2       | 2 | convex | convex|
@@ -23,6 +23,11 @@ Support MOO experiments in `MOP/` with problems:
 ex3                   |  DTLZ2
 :-------------------------:|:-------------------------:
 ![](src/train_1.gif)  |  ![](src/train_2.gif)
+
+
+ex3                   |  DTLZ2
+:-------------------------:|:-------------------------:
+![](src/test1.gif)  |  ![](src/test3.gif)
 
 Support MTL experiments in `MTL/experiments/Multi_task/` and `MTL/experiments/Multi_output/` with datasets:
 | Dataset  | Num of tasks      | Website |

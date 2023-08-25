@@ -1,4 +1,4 @@
-# A Framework for Pareto Multi Task Learning with Completed Scalarization Functions
+# A Framework for Controllable Pareto Front Learning with Completed Scalarization Functions and its Applications
 
 <p align="center">
   <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-1.8 %20%7C%201.12 %20%7C%202.0-673ab7.svg" alt="Tested PyTorch Versions"></a>

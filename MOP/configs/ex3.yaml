@@ -3,7 +3,7 @@ NAME: 'ex3'
 MODE: '3d'
 
 TRAIN:
-  Epoch: 360
+  Epoch: 100000
   Alpha: 0.6
   OPTIMIZER:
     TYPE: 'adam'
@@ -15,7 +15,7 @@ TRAIN:
   Ref_point: "2,2,2"
   Solver:
     Cheby:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
     LS:
       Num_hidden_layer: 3
@@ -52,7 +52,7 @@ TRAIN:
       Last_activation: 'softmax'
       Rho: 100
     EPO:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
     HVI:
       Num_hidden_layer: 3
@@ -63,7 +63,7 @@ TRAIN:
 EVAL:
   Flag: False
   Num_ray_init: 1000
-  Num_ray_test: 6
+  Num_ray_test: 10
   Num_eval: 30   
 
 

@@ -16,11 +16,11 @@ def run_train(cfg,criterion,device,problem):
     if cfg['MODE'] == '2d':
         sol, time_training = train_epoch(device,cfg,criterion,pb)
         print("Time: ",time_training)  
-        visualize_2d(sol,pf,cfg,criterion,pb)
+        #visualize_2d(sol,pf,cfg,criterion,pb)
     else:
         sol, time_training = train_epoch(device,cfg,criterion,pb)
         print("Time: ",time_training)  
-        visualize_3d(sol,pf,cfg,criterion,pb)
+        #visualize_3d(sol,pf,cfg,criterion,pb)
 def run_predict(cfg,criterion,device,problem):
     pb = Problem(problem, cfg['MODE'])
     pf = pb.get_pf()
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--problem", type=str, choices=["ex1", "ex2","ex3","ex4","ZDT1","ZDT2","ZDT3","DTLZ2"],
-        default="ex3", help="solver"
+        default="DTLZ2", help="solver"
     )
     parser.add_argument(
         "--mode", type=str,

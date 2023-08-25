@@ -11,6 +11,26 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from matplotlib.tri import Triangulation, LinearTriInterpolator
 from scipy import stats
 import itertools
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.patches import FancyArrowPatch
+from mpl_toolkits.mplot3d import proj3d
+
+class Arrow3D(FancyArrowPatch):
+    def __init__(self, xs, ys, zs, *args, **kwargs):
+        FancyArrowPatch.__init__(self, (0,0), (0,0), *args, **kwargs)
+        self._verts3d = xs, ys, zs
+
+    def draw(self, renderer):
+        xs3d, ys3d, zs3d = self._verts3d
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, renderer.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+        FancyArrowPatch.draw(self, renderer)
+    def do_3d_projection(self, renderer=None):
+        xs3d, ys3d, zs3d = self._verts3d
+        xs, ys, zs = proj3d.proj_transform(xs3d, ys3d, zs3d, self.axes.M)
+        self.set_positions((xs[0],ys[0]),(xs[1],ys[1]))
+
+        return np.min(zs)
 def simplex(n_vals):
     base = np.linspace(0, 0.25, n_vals, endpoint=False)
     coords = np.asarray(list(itertools.product(base, repeat=3)))
@@ -359,10 +379,11 @@ def visualize_predict_3d(cfg,targets_epo, results1, contexts,pb,pf,criterion,igd
     triangle_vertices = np.append(triangle_vertices,np.array([np.array([[0,0,1],[0.2,0,0.8],[0,0.2,0.8]])/4]),axis=0)
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1, projection='3d')
-    collection = Poly3DCollection(triangle_vertices,facecolors='grey', edgecolors=None)
+    collection = Poly3DCollection(triangle_vertices,facecolors='blue', edgecolors=None)
     if criterion == "KL" or criterion == "Cheby"or criterion == "EPO":
         ax.add_collection(collection)
     k = 0
+    ep_ray_lines = []
     for r in contexts:
         #print(r)
         r_inv = 1. / r
@@ -376,8 +397,16 @@ def visualize_predict_3d(cfg,targets_epo, results1, contexts,pb,pf,criterion,igd
             ep_ray_line = np.stack([np.zeros(3), ep_ray])
             label = r'$r^{-1}$ ray' if k == 0 else ''
             k+=1
+            ep_ray_lines.append(ep_ray_line)
             ax.plot(ep_ray_line[:, 0], ep_ray_line[:, 1],ep_ray_line[:, 2], color='k',
                     lw=1, ls='--',label=label)
+            #print([ep_ray_line[0,0],ep_ray_line[1,0]])
+            k = 1.2
+            arw = Arrow3D([ep_ray_line[0,0],k*ep_ray_line[1,0]],[ep_ray_line[0,1],k*ep_ray_line[1,1]],[ep_ray_line[0,2],k*ep_ray_line[1,2]], arrowstyle="->", color="k", lw = 1, mutation_scale=15)
+            ax.add_artist(arw)
+            # ax.arrow3D(.95 * ep_ray_line[0], .95 * ep_ray_line[1],.95 * ep_ray_line[2],
+            #             .05 * ep_ray_line[0], .05 * ep_ray_line[1],.05 * ep_ray_line[2],
+            #             color='k', lw=1, head_width=.02)
     x = results1[:,0]
     y = results1[:,1]
     z = results1[:,2]
@@ -415,13 +444,25 @@ def visualize_predict_3d(cfg,targets_epo, results1, contexts,pb,pf,criterion,igd
     ax.zaxis._axinfo['tick']['inward_factor'] = 0
     ax.zaxis._axinfo['tick']['outward_factor'] = 0.4
     # ax.view_init(5, -90)
-    ax.view_init(45, 45)
+    graph = ax.scatter(np.array(x), np.array(y), np.array(z), zdir='z',marker='.', s=10, c='black', depthshade=False)
+    title = ax.set_title('')
+    fake2Dline = mpl.lines.Line2D([0], [0], linestyle="none", c='grey',
+                                marker='s', alpha=0.5)
+    ax.legend([fake2Dline], ['Pareto front'], numpoints=1)
+    #plt.title("MED: "+str(med),fontsize=20)
+    def update_graph(i):
+        ax.view_init(5, int(i%360))  
+        graph._offsets3d = (x[:i+1],y[:i+1],z[:i+1])
+        plt.pause(.001)
+        title.set_text('Testing, MED: {:.2f}'.format(med))
+    ani = FuncAnimation(fig, update_graph,frames = 360, interval=40)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_zlim(0, 1)
     ax.legend(fontsize=12)
-    plt.title("MED: "+str(med),fontsize=20)
-    plt.tight_layout()
+    
+    ani.save('./train_results/test3.gif', writer='imagemagick', fps=30)
+    print("save done! ")
     # plt.savefig("./infer_results/"+str(name)+"_"+str(criterion)+"_"+str(mode)+".png")
     # plt.savefig("./infer_results/"+str(name)+"_"+str(criterion)+"_"+str(mode)+".pdf")
-    plt.show()
+    #plt.show()

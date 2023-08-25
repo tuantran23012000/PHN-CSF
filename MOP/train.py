@@ -8,6 +8,8 @@ import numpy as np
 import torch
 from tools.scalarization_function import CS_functions,EPOSolver
 from tools.hv import HvMaximization
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 def train_epoch(device, cfg, criterion, pb):
     name = cfg['NAME']
     mode = cfg['MODE']

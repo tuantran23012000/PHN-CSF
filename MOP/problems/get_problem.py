@@ -6,8 +6,8 @@ def get_ref_dirs(n_obj):
     if n_obj == 2:
         ref_dirs = UniformReferenceDirectionFactory(2, n_points=100).do()
     elif n_obj == 3:
-        ref_dirs = UniformReferenceDirectionFactory(3, n_partitions=15).do()
-        #ref_dirs = UniformReferenceDirectionFactory(3, n_partitions=100).do()
+        #ref_dirs = UniformReferenceDirectionFactory(3, n_partitions=15).do()
+        ref_dirs = UniformReferenceDirectionFactory(3, n_partitions=100).do()
     else:
         raise Exception("Please provide reference directions for more than 3 objectives!")
     return ref_dirs
@@ -79,7 +79,7 @@ class ex2():
         return (1/50)*((output[0][0]-5)**2 + (output[0][1]-5)**2)
 class ex3():
     def __init__(self):
-        self.num = 10
+        self.num = 50
     def create_pf(self):
         u = np.linspace(0, 1, endpoint=True, num=self.num)
         v = np.linspace(0, 1, endpoint=True, num=self.num)

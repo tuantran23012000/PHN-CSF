@@ -1,5 +1,10 @@
-
 # A Framework for Pareto Multi Task Learning with Completed Scalarization Functions
+
+<p align="center">
+  <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-1.8 %20%7C%201.12 %20%7C%202.0-673ab7.svg" alt="Tested PyTorch Versions"></a>
+  <a href="https://arxiv.org/abs/2302.12487" target="_blank"><img src="https://img.shields.io/badge/arXiv-2302.12487-009688.svg" alt="arXiv"></a>
+</p>
+
 This is the official implementation for [Paper](https://arxiv.org/abs/2302.12487)  
 
 <img src="src/1.jpg" alt=”Image” style="width:1200px;height:400px;">

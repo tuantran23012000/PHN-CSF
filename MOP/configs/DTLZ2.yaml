@@ -3,7 +3,7 @@ NAME: 'DTLZ2'
 MODE: '3d'
 
 TRAIN:
-  Epoch: 100000
+  Epoch: 10000
   Alpha: 0.6
   OPTIMIZER:
     TYPE: 'adam'

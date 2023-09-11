@@ -47,7 +47,9 @@ class CS_functions():
         return U
 
     def chebyshev_function(self):
+        
         cheby = max(self.losses * self.ray)
+        
         return cheby
 
     def KL_function(self):

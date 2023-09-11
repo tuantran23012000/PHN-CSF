@@ -1,6 +1,21 @@
 from torch import nn
 import torch.nn.functional as F
+import torch
+class LayerNorm(nn.Module):
+    def __init__(self, d_model, eps=1e-12):
+        super(LayerNorm, self).__init__()
+        self.gamma = nn.Parameter(torch.ones(d_model))
+        self.beta = nn.Parameter(torch.zeros(d_model))
+        self.eps = eps
 
+    def forward(self, x):
+        mean = x.mean(-1, keepdim=True)
+        var = x.var(-1, unbiased=False, keepdim=True)
+        # '-1' means last dimension. 
+
+        out = (x - mean) / torch.sqrt(var + self.eps)
+        out = self.gamma * out + self.beta
+        return out
 class Hypernetwork(nn.Module):
       "Hypernetwork"
 
@@ -14,7 +29,6 @@ class Hypernetwork(nn.Module):
             self.input_layer =  nn.Sequential(nn.Linear(self.n_tasks, self.ray_hidden_dim),nn.ReLU(inplace=True))
             self.hidden_layer = nn.ModuleList([nn.Linear(self.ray_hidden_dim, self.ray_hidden_dim) for i in range(self.num_hidden_layer)])
             self.output_layer =  nn.Linear(self.ray_hidden_dim, self.out_dim)
-
       def forward(self, ray):
             x = self.input_layer(ray)
             for i in range(self.num_hidden_layer):

@@ -8,9 +8,12 @@ import numpy as np
 import torch
 from tools.scalarization_function import CS_functions,EPOSolver
 from tools.hv import HvMaximization
+from hyper_trans import Hyper_trans
+from tools.utils import find_target
+from tools.metrics import IGD, MED
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
-def train_epoch(device, cfg, criterion, pb):
+def train_epoch(device, cfg, criterion, pb,pf,model_type):
     name = cfg['NAME']
     mode = cfg['MODE']
     ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim']
@@ -23,14 +26,26 @@ def train_epoch(device, cfg, criterion, pb):
     wd = cfg['TRAIN']['OPTIMIZER']['WEIGHT_DECAY']
     type_opt = cfg['TRAIN']['OPTIMIZER']['TYPE']
     epochs = cfg['TRAIN']['Epoch']
+    iters = cfg['TRAIN']['Iter']
     alpha_r = cfg['TRAIN']['Alpha']
     start = 0.
-    
+    rays_eval = np.load("eval_rays.npy")
+    print(rays_eval.shape)
+    rays_eval = torch.from_numpy(rays_eval).float()
+    val_dt = torch.utils.data.TensorDataset(rays_eval)
+    val_loader = torch.utils.data.DataLoader(
+        dataset=val_dt,
+        batch_size=100,num_workers=4,
+        shuffle=False)
+    best_med = 1000
     if criterion == 'HVI':
         sol = []
         head = cfg['TRAIN']['Solver'][criterion]['Head']
         partition = np.array([1/head]*head)
-        hnet = Hypernetwork(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
+        if model_type == 'mlp':
+            hnet = Hypernetwork(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
+        else:
+            hnet = Hyper_trans(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
         hnet = hnet.to(device)
         if type_opt == 'adam':
             optimizer = torch.optim.Adam(hnet.parameters(), lr = lr, weight_decay=wd)
@@ -48,6 +63,7 @@ def train_epoch(device, cfg, criterion, pb):
         
         dem = 0
         for epoch in tqdm(range(epochs)):
+
             dem += 1
 
             hnet.train()
@@ -111,7 +127,10 @@ def train_epoch(device, cfg, criterion, pb):
             penalty = [i.item() for i in penalty]
             sol.append(output.cpu().detach().numpy().tolist()[0])
     else:
-        hnet = Hypernetwork(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
+        if model_type == 'mlp':
+            hnet = Hypernetwork(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
+        else:
+            hnet = Hyper_trans(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
         hnet = hnet.to(device)
         sol = []
         if type_opt == 'adam':
@@ -121,67 +140,105 @@ def train_epoch(device, cfg, criterion, pb):
         mo_opt = HvMaximization(1, n_tasks, ref_point)
         start = time.time()
         for epoch in tqdm(range(epochs)):
-            if cfg['MODE'] == '2d':
-                ray = torch.from_numpy(
-                np.random.dirichlet((alpha_r, alpha_r), 1).astype(np.float32).flatten()
+            for i in range(iters):
+                if cfg['MODE'] == '2d':
+                    ray = torch.from_numpy(
+                    np.random.dirichlet((alpha_r, alpha_r), 1).astype(np.float32).flatten()
+                    ).to(device)
+                else:
+                    ray = torch.from_numpy(
+                np.random.dirichlet((alpha_r, alpha_r,alpha_r), 1).astype(np.float32).flatten()
                 ).to(device)
-            else:
-                ray = torch.from_numpy(
-            np.random.dirichlet((alpha_r, alpha_r,alpha_r), 1).astype(np.float32).flatten()
-            ).to(device)
-            hnet.train()
-            optimizer.zero_grad()
-            output = hnet(ray)
-            output = torch.sqrt(output)
-            ray_cs = 1/ray
-            ray = ray.squeeze(0)
-            obj_values = []
-            objectives = pb.get_values(output)
-            for i in range(len(objectives)):
-                obj_values.append(objectives[i])
-            losses = torch.stack(obj_values)
-            CS_func = CS_functions(losses,ray)
+                hnet.train()
+                optimizer.zero_grad()
+                output = hnet(ray)
+                #output = torch.sqrt(output)
+                if epoch == epochs - 1:
+                    sol.append(output.cpu().detach().numpy().tolist()[0])
+                ray_cs = 1/ray
+                ray = ray.squeeze(0)
+                obj_values = []
+                #print(output)
+                objectives = pb.get_values(output)
+                #print(objectives)
+                for i in range(len(objectives)):
+                    obj_values.append(objectives[i][0])
+                losses = torch.stack(obj_values)
+                #print(losses, ray)
+                CS_func = CS_functions(losses,ray)
 
-            if criterion == 'Prod':
-                loss = CS_func.product_function()
-            elif criterion == 'Log':
-                loss = CS_func.log_function()
-            elif criterion == 'AC':
-                rho = cfg['TRAIN']['Solver'][criterion]['Rho']
-                loss = CS_func.ac_function(rho = rho)
-            elif criterion == 'MC':
-                rho = cfg['TRAIN']['Solver'][criterion]['Rho']
-                loss = CS_func.mc_function(rho = rho)
-            elif criterion == 'HV':
-                loss_numpy = []
-                for j in range(1):
-                    loss_numpy.append(losses.detach().cpu().numpy())
-                loss_numpy = np.array(loss_numpy).T
-                loss_numpy = loss_numpy[np.newaxis, :, :]
-                rho = cfg['TRAIN']['Solver'][criterion]['Rho']
-                dynamic_weight = mo_opt.compute_weights(loss_numpy[0,:,:])
-                loss = CS_func.hv_function(dynamic_weight.reshape(1,3),rho = rho)
-            elif criterion == 'LS':
-                loss = CS_func.linear_function()
-            elif criterion == 'Cheby':
-                loss = CS_func.chebyshev_function()
-            elif criterion == 'Utility':
-                ub = cfg['TRAIN']['Solver'][criterion]['Ub']
-                loss = CS_func.utility_function(ub = ub)
-            elif criterion == 'KL':
-                loss = CS_func.KL_function()
-            elif criterion == 'Cosine':
-                loss = CS_func.cosine_function()
-            elif criterion == 'Cauchy':
-                CS_func = CS_functions(losses,ray_cs)
-                loss = CS_func.cauchy_schwarz_function()
-            elif criterion == 'EPO':
-                solver = EPOSolver(n_tasks=n_tasks, n_params=count_parameters(hnet))
-                loss = solver(losses, ray, list(hnet.parameters()))
-            loss.backward()
-            optimizer.step()
-            sol.append(output.cpu().detach().numpy().tolist()[0])
+                if criterion == 'Prod':
+                    loss = CS_func.product_function()
+                elif criterion == 'Log':
+                    loss = CS_func.log_function()
+                elif criterion == 'AC':
+                    rho = cfg['TRAIN']['Solver'][criterion]['Rho']
+                    loss = CS_func.ac_function(rho = rho)
+                elif criterion == 'MC':
+                    rho = cfg['TRAIN']['Solver'][criterion]['Rho']
+                    loss = CS_func.mc_function(rho = rho)
+                elif criterion == 'HV':
+                    loss_numpy = []
+                    for j in range(1):
+                        loss_numpy.append(losses.detach().cpu().numpy())
+                    loss_numpy = np.array(loss_numpy).T
+                    loss_numpy = loss_numpy[np.newaxis, :, :]
+                    rho = cfg['TRAIN']['Solver'][criterion]['Rho']
+                    dynamic_weight = mo_opt.compute_weights(loss_numpy[0,:,:])
+                    loss = CS_func.hv_function(dynamic_weight.reshape(1,3),rho = rho)
+                elif criterion == 'LS':
+                    loss = CS_func.linear_function()
+                elif criterion == 'Cheby':
+                    loss = CS_func.chebyshev_function()
+                elif criterion == 'Utility':
+                    ub = cfg['TRAIN']['Solver'][criterion]['Ub']
+                    loss = CS_func.utility_function(ub = ub)
+                elif criterion == 'KL':
+                    loss = CS_func.KL_function()
+                elif criterion == 'Cosine':
+                    loss = CS_func.cosine_function()
+                elif criterion == 'Cauchy':
+                    CS_func = CS_functions(losses,ray_cs)
+                    loss = CS_func.cauchy_schwarz_function()
+                elif criterion == 'EPO':
+                    solver = EPOSolver(n_tasks=n_tasks, n_params=count_parameters(hnet))
+                    loss = solver(losses, ray, list(hnet.parameters()))
+                loss.backward()
+                optimizer.step()
+            hnet.eval()
+            targets = []
+            results = []
+            for i, batch in enumerate(val_loader):
+                rays_batch = batch[0].float() # (B,ray_dim)     
+                output = hnet(rays_batch)[0] # (B,out_dim)
+                #print(output.shape)
+                objectives = pb.get_values(output) # (m,B)
+                #objectives = torch.amax(self.losses * self.ray,dim=1)
+                obj_values = []
+                for i in range(len(objectives)):
+                    obj_values.append(objectives[i])
+                loss_per_sample = torch.stack(obj_values).transpose(1,0) # (B,ray_dim)
+                results.append(loss_per_sample.detach().cpu().numpy().tolist())
+                for ray in rays_batch:
+                    r_inv = 1. / (ray.detach().cpu().numpy())
+                    target_epo = find_target(pf, criterion = 'Cheby', context = r_inv.tolist(),cfg=cfg)
+                    targets.append(target_epo)
+            targets = np.array(targets, dtype='float32')
+            results = np.stack(results,axis = 0).reshape(len(val_loader)*100,2)     
+            med = MED(targets, results)
+            if med < best_med:
+                best_med = med
+                print("Epoch:", epoch)
+                print("MED: ",best_med)
+                if model_type == 'mlp':
+                    torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim'])+".pt"))
+                else:
+                    torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim'])+"_at.pt"))
+                
     end = time.time()
     time_training = end-start
-    torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim'])+".pt"))
+    # if model_type == 'mlp':
+    #     torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim'])+".pt"))
+    # else:
+    #     torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim'])+"_at.pt"))
     return sol,time_training

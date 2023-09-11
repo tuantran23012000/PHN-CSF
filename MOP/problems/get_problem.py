@@ -58,9 +58,9 @@ class ex1():
         pf = np.array(pf)
         return pf
     def f_1(self, output):
-        return output[0][0]
+        return output[:,0]
     def f_2(self, output):
-        return (output[0][0]-1)**2
+        return (output[:,0]-1)**2
 class ex2():
     def __init__(self):
         self.num = 1000

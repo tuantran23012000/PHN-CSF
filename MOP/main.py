@@ -10,30 +10,30 @@ import yaml
 from problems.get_problem import Problem
 from train import train_epoch
 from predict import predict_result
-def run_train(cfg,criterion,device,problem):
+def run_train(cfg,criterion,device,problem,model_type):
     pb = Problem(problem, cfg['MODE'])
     pf = pb.get_pf()
     if cfg['MODE'] == '2d':
-        sol, time_training = train_epoch(device,cfg,criterion,pb)
+        sol, time_training = train_epoch(device,cfg,criterion,pb,pf,model_type)
         print("Time: ",time_training)  
-        #visualize_2d(sol,pf,cfg,criterion,pb)
+        visualize_2d(sol,pf,cfg,criterion,pb)
     else:
-        sol, time_training = train_epoch(device,cfg,criterion,pb)
+        sol, time_training = train_epoch(device,cfg,criterion,pb,pf,model_type)
         print("Time: ",time_training)  
-        #visualize_3d(sol,pf,cfg,criterion,pb)
-def run_predict(cfg,criterion,device,problem):
+        visualize_3d(sol,pf,cfg,criterion,pb)
+def run_predict(cfg,criterion,device,problem,model_type):
     pb = Problem(problem, cfg['MODE'])
     pf = pb.get_pf()
     if cfg['MODE'] == '2d':
         if cfg['EVAL']['Flag']:
             check = []
             for i in range(cfg['EVAL']['Num_eval']):
-                igd, _, _, _,med = predict_result(device,cfg,criterion,pb,pf,num_e=None,contexts = [])
+                igd, _, _, _,med = predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [])
                 check.append(med.tolist())
             print("Mean: ",np.array(check).mean())
             print("Std: ",np.array(check).std())
         else:
-            igd, targets_epo, results1, contexts,med = predict_result(device,cfg,criterion,pb,pf,contexts = [])
+            igd, targets_epo, results1, contexts,med = predict_result(device,cfg,criterion,pb,pf,model_type,contexts = [])
             #print(contexts)
             visualize_predict_2d(cfg,targets_epo, results1, contexts,pb,pf,criterion,igd,med)
     else:
@@ -64,20 +64,25 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--problem", type=str, choices=["ex1", "ex2","ex3","ex4","ZDT1","ZDT2","ZDT3","DTLZ2"],
-        default="DTLZ2", help="solver"
+        default="ex1", help="solver"
     )
     parser.add_argument(
         "--mode", type=str,
         default="test"
+    )
+    parser.add_argument(
+        "--model_type", type=str,
+        default="mlp"
     )
     args = parser.parse_args()
     criterion = args.solver 
     print("Scalar funtion: ",criterion)
     problem = args.problem
     config_file = "./configs/"+str(problem)+".yaml"
+    model_type = args.model_type
     with open(config_file) as stream:
         cfg = yaml.safe_load(stream)
     if args.mode == "train":
-        run_train(cfg,criterion,device,problem)
+        run_train(cfg,criterion,device,problem,model_type)
     else:
-        run_predict(cfg,criterion,device,problem)
+        run_predict(cfg,criterion,device,problem,model_type)

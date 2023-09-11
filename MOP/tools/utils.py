@@ -298,12 +298,12 @@ def visualize_3d(sol,pf,cfg,criterion,pb):
         plt.pause(.001)
         graph._offsets3d = (x[:i+1],y[:i+1],z[:i+1])
         title.set_text('Training, iteration: {}'.format(i))
-    ani = FuncAnimation(fig, update_graph,frames = len(x), interval=40)
+    #ani = FuncAnimation(fig, update_graph,frames = len(x), interval=40)
     #ax.view_init(5, 45)
-    # plt.savefig("./train_results/"+str(cfg['NAME'])+"_train_"+str(criterion)+".png")
-    ani.save('./train_results/train.gif', writer='imagemagick', fps=30)
+    #plt.savefig("./train_results/"+str(cfg['NAME'])+"_train_"+str(criterion)+".png")
+    #ani.save('./train_results/train.gif', writer='imagemagick', fps=30)
     print("save done! ")
-    #plt.show()
+    plt.show()
 def visualize_2d(sol,pf,cfg,criterion,pb):
     x = []
     y = []
@@ -315,11 +315,11 @@ def visualize_2d(sol,pf,cfg,criterion,pb):
     ax.scatter(pf[:,0],pf[:,1],s=80,c='gray',label="Pareto front")
     ax.scatter(x[0],y[0], c = 'k', s = 90,label="Initial Point")
     ax.plot(x[0:2],y[0:2])
-    for i in range(len(x[3:])):
-        colors = matplotlib.cm.magma_r(np.linspace(0.1, 0.6, len(x[3:])))
-        plt.scatter(x[3:],y[3:], color=colors, s = 5,zorder=9)
+    # for i in range(len(x[3:])):
+    #     colors = mpl.cm.magma_r(np.linspace(0.1, 0.6, len(x[3:])))
+    #     plt.scatter(x[3:],y[3:], color=colors, s = 5,zorder=9)
 
-    #plt.scatter(x[3:],y[3:], c = 'green', s = 20,label="Generated Point")
+    plt.scatter(x[3:],y[3:], c = 'green', s = 20,label="Generated Point")
     ax.scatter(x[-1],y[-1], c = 'red', s = 20,label="Convergence point")
     #plt.title('Pareto front',fontsize=15)
     ax.set_xlabel(r'$f_1$',fontsize=15)
@@ -455,14 +455,14 @@ def visualize_predict_3d(cfg,targets_epo, results1, contexts,pb,pf,criterion,igd
         graph._offsets3d = (x[:i+1],y[:i+1],z[:i+1])
         plt.pause(.001)
         title.set_text('Testing, MED: {:.2f}'.format(med))
-    ani = FuncAnimation(fig, update_graph,frames = 360, interval=40)
+    #ani = FuncAnimation(fig, update_graph,frames = 360, interval=40)
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     ax.set_zlim(0, 1)
     ax.legend(fontsize=12)
     
-    ani.save('./train_results/test3.gif', writer='imagemagick', fps=30)
+    #ani.save('./train_results/test3.gif', writer='imagemagick', fps=30)
     print("save done! ")
     # plt.savefig("./infer_results/"+str(name)+"_"+str(criterion)+"_"+str(mode)+".png")
     # plt.savefig("./infer_results/"+str(name)+"_"+str(criterion)+"_"+str(mode)+".pdf")
-    #plt.show()
+    plt.show()

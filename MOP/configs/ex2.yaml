@@ -10,7 +10,7 @@ TRAIN:
     Lr: 0.001
     WEIGHT_DECAY: 0
   Out_dim: 2
-  Ray_hidden_dim: 100
+  Ray_hidden_dim: 105
   N_task: 2
   Ref_point: "2,2"
   Solver:
@@ -64,7 +64,7 @@ TRAIN:
       Rho: 200
 
 EVAL:
-  Flag: True
+  Flag: False
   Num_ray_init: 1000
   Num_ray_test: 50
   Num_eval: 30   

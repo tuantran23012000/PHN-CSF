@@ -3,14 +3,15 @@ NAME: 'ex3'
 MODE: '3d'
 
 TRAIN:
-  Epoch: 10000
+  Epoch: 10
+  Iter: 20000
   Alpha: 0.6
   OPTIMIZER:
     TYPE: 'adam'
     Lr: 0.001
     WEIGHT_DECAY: 0
   Out_dim: 3
-  Ray_hidden_dim: 100
+  Ray_hidden_dim: 39 #mpl = 38 trans = 16
   N_task: 3
   Ref_point: "2,2,2"
   Solver:
@@ -18,44 +19,44 @@ TRAIN:
       Num_hidden_layer: 1
       Last_activation: 'softmax'
     LS:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
     Utility:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
       Ub: 2.01
     KL:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
     Cosine:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
     Cauchy:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
     Log:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
     Prod:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
     AC:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
       Rho: 0.1
     MC:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
       Rho: 0.1
     HV:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
       Rho: 100
     EPO:
       Num_hidden_layer: 1
       Last_activation: 'softmax'
     HVI:
-      Num_hidden_layer: 3
+      Num_hidden_layer: 1
       Last_activation: 'softmax'
       Head : 8
       Rho: 200

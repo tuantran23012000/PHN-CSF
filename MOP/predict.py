@@ -30,6 +30,7 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
     name = cfg['NAME']
     num_ray_init = cfg['EVAL']['Num_ray_init']
     num_ray_test = cfg['EVAL']['Num_ray_test']
+    n_tasks = cfg['TRAIN']['N_task']
     if model_type == 'mlp':
         ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim'])+".pt"
     else:
@@ -43,15 +44,18 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
     contexts = get_rays(cfg, num_ray_init)
     rng = np.random.default_rng()
     contexts = rng.choice(contexts,num_ray_test)
-    contexts = np.array([[0.2, 0.5,0.3], [0.4, 0.25,0.35],[0.3,0.2,0.5],[0.55,0.2,0.25]])
-    contexts = np.array([[0.5, 0.5], [0.1, 0.9],[0.8,0.2]])
+    if n_tasks == 3:
+        contexts = np.array([[0.2, 0.5,0.3], [0.4, 0.25,0.35],[0.3,0.2,0.5],[0.55,0.2,0.25]])
+    else:
+        contexts = np.array([[0.5, 0.5], [0.1, 0.9],[0.8,0.2]])
     for r in contexts:
         r_inv = 1. / r
         ray = torch.Tensor(r.tolist()).to(device)
         #ray = ray.unsqueeze(0)
         output = hnet1(ray)
         # print(output)
-        #output = torch.sqrt(output)
+        if name == 'ex3':
+            output = torch.sqrt(output)
         objectives = pb.get_values(output)
         obj_values = []
         for i in range(len(objectives)):

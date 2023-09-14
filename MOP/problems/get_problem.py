@@ -22,11 +22,11 @@ class DTLZ2():
         pf =  generic_sphere(ref_dirs)
         return pf
     def f_1(self, output):
-        return (torch.cos(torch.pi/2*output[0, 0])*torch.cos(torch.pi/2*output[0, 1])*(sum((output[0, 2:]-0.5)**2)+1))
+        return (torch.cos(torch.pi/2*output[:, 0])*torch.cos(torch.pi/2*output[:, 1])*(sum((output[:, 2:]-0.5)**2)+1))
     def f_2(self, output):
-        return (torch.cos(torch.pi/2*output[0, 0]**self.a)*torch.sin(torch.pi/2*output[0, 1]**self.a)*(sum((output[0, 2:]-0.5)**2)+1))
+        return (torch.cos(torch.pi/2*output[:, 0]**self.a)*torch.sin(torch.pi/2*output[:, 1]**self.a)*(sum((output[:, 2:]-0.5)**2)+1))
     def f_3(self, output):
-        return torch.sin(torch.pi/2*output[0, 0]**self.a)*(sum((output[0, 2:]-0.5)**2)+1)
+        return torch.sin(torch.pi/2*output[:, 0]**self.a)*(sum((output[:, 2:]-0.5)**2)+1)
 class test():
     def __init__(self):
         #self.a = 1
@@ -42,9 +42,9 @@ class test():
         pf = np.array(pf)
         return pf
     def f_1(self, output):
-        return torch.cos(output[0, 0])**2 + 0.2
+        return torch.cos(output[:,0])**2 + 0.2
     def f_2(self, output):
-        return 1.3+torch.sin(output[0, 1])**2- torch.cos(output[0, 0])-0.1*torch.sin(22*torch.pi*torch.cos(output[0, 0])**2)**5
+        return 1.3+torch.sin(output[:,1])**2- torch.cos(output[:, 0])-0.1*torch.sin(22*torch.pi*torch.cos(output[:, 0])**2)**5
 class ex1():
     def __init__(self):
         self.num = 1000
@@ -74,9 +74,9 @@ class ex2():
         pf = np.array(pf)
         return pf
     def f_1(self, output):
-        return (1/50)*(output[0][0]**2 + output[0][1]**2)
+        return (1/50)*(output[:,0]**2 + output[:,1]**2)
     def f_2(self, output):
-        return (1/50)*((output[0][0]-5)**2 + (output[0][1]-5)**2)
+        return (1/50)*((output[:,0]-5)**2 + (output[:,1]-5)**2)
 class ex3():
     def __init__(self):
         self.num = 50
@@ -107,14 +107,14 @@ class ex3():
         pf = np.stack(pf)
         return pf
     def f_1(self, output):
-        return ((output[0][0]**2 + output[0][1]**2 + output[0][2]**2+output[0][1] - 12*(output[0][2])) +12)/14
+        return ((output[:,0]**2 + output[:,1]**2 + output[:,2]**2+output[:,1] - 12*(output[:,2])) +12)/14
 
     def f_2(self, output):
-        return ((output[0][0]**2 + output[0][1]**2 + output[0][2]**2\
-            + 8*(output[0][0]) - 44.8*(output[0][1]) + 8*(output[0][2])) +44)/57
+        return ((output[:,0]**2 + output[:,1]**2 + output[:,2]**2\
+            + 8*(output[:,0]) - 44.8*(output[:,1]) + 8*(output[:,2])) +44)/57
     def f_3(self, output):
-        return ((output[0][0]**2 + output[0][1]**2 + output[0][2]**2 -44.8*(output[0][0])\
-            + 8*(output[0][1]) + 8*(output[0][2]))+43.7)/56
+        return ((output[:,0]**2 + output[:,1]**2 + output[:,2]**2 -44.8*(output[:,0])\
+            + 8*(output[:,1]) + 8*(output[:,2]))+43.7)/56
 class ex4():
     def __init__(self):
         self.num = 1000
@@ -123,9 +123,9 @@ class ex4():
         pf = np.array(pf)
         return pf
     def f_1(self, output):
-        return output[0][0]
+        return output[:,0]
     def f_2(self, output):
-        return output[0][1]
+        return output[:,1]
 class ZDT1():
     def __init__(self):
         self.n_pareto_points = 1000
@@ -134,14 +134,14 @@ class ZDT1():
         pf = np.array([x, 1 - np.sqrt(x)]).T
         return pf
     def f_1(self, output):
-        return output[0][0]
+        return output[:,0]
     def f_2(self, output):
         dim = output.shape[1]
         tmp = 0
         for i in range(1,dim):
-            tmp += output[0][i]
+            tmp += output[:,i]
         g = 1 + (9/(dim-1))*tmp
-        f1 = output[0][0]
+        f1 = output[:,0]
         return g*(1 - torch.sqrt(f1/g))
 class ZDT2():
     def __init__(self):
@@ -151,14 +151,14 @@ class ZDT2():
         pf = np.array([x, 1 - (x)**2]).T
         return pf
     def f_1(self, output):
-        return output[0][0]
+        return output[:,0]
     def f_2(self, output):
         dim = output.shape[1]
         tmp = 0
         for i in range(1,dim):
-            tmp += output[0][i]
+            tmp += output[:,i]
         g = 1 + (9/(dim-1))*tmp
-        f1 = output[0][0]
+        f1 = output[:,0]
         return g*(1 - (f1/g)**2)
 class ZDT3():
     def __init__(self):
@@ -184,14 +184,14 @@ class ZDT3():
 
         return pf
     def f_1(self, output):
-        return output[0][0]
+        return output[:,0]
     def f_2(self, output):
         dim = output.shape[1]
         tmp = 0
         for i in range(1,dim):
-            tmp += output[0][i]
+            tmp += output[:,i]
         g = 1 + (9/(dim-1))*tmp
-        f1 = output[0][0]
+        f1 = output[:,0]
         return 1 + g*(1 - torch.sqrt(f1/g) - (f1/g)*torch.mean(torch.sin(10*torch.pi*f1)))
 class Problem():
     def __init__(self,name, mode):

@@ -48,12 +48,12 @@ def run_predict(cfg,criterion,device,problem,model_type):
         if cfg['EVAL']['Flag']:
             check = []
             for i in range(cfg['EVAL']['Num_eval']):
-                igd, _, _, _, med = predict_result(device,cfg,criterion,pb,pf,num_e=None,contexts = contexts)
+                igd, _, _, _, med = predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = contexts)
                 check.append(med.tolist())
             print("Mean: ",np.array(check).mean())
             print("Std: ",np.array(check).std())
         else:
-            igd, targets_epo, results1, contexts,med = predict_result(device,cfg,criterion,pb,pf,contexts = contexts)
+            igd, targets_epo, results1, contexts,med = predict_result(device,cfg,criterion,pb,pf,model_type,contexts = contexts)
             visualize_predict_3d(cfg,targets_epo, results1, contexts,pb,pf,criterion,igd,med)
 if __name__ == "__main__":
     device = torch.device(f"cuda:0" if torch.cuda.is_available() and not False else "cpu")
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--problem", type=str, choices=["ex1", "ex2","ex3","ex4","ZDT1","ZDT2","ZDT3","DTLZ2"],
-        default="ex1", help="solver"
+        default="ex3", help="solver"
     )
     parser.add_argument(
         "--mode", type=str,

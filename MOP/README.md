@@ -39,9 +39,9 @@ Custom Model architecture and hyper-parameters in `configs/`
 
 ## Training
 ```
-python3 main.py --solver <solver type> -- problem <problem name> --mode train
+python3 main.py --solver <solver type> -- problem <problem name> --mode train --model_type <transformer/mlp>
 ```
 ## Evaluating
 ```
-python3 main.py --solver <solver type> -- problem <problem name> --mode predict
+python3 main.py --solver <solver type> -- problem <problem name> --mode predict --model_type <transformer/mlp>
 ```

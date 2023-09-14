@@ -153,7 +153,6 @@ def find_target(pf, criterion, context,cfg):
         F = -np.sum((dynamic_weight*pf),axis =1) + rho*cosine
     elif criterion == 'Cheby':
         F = np.max(context*pf,axis = 1)
-
     elif criterion == 'LS':
         F = np.sum(context*pf,axis = 1)
 

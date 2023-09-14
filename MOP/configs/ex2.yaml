@@ -3,62 +3,63 @@ NAME: 'ex2'
 MODE: '2d'
 
 TRAIN:
-  Epoch: 10000
+  Epoch: 10
+  Iter: 20000
   Alpha: 0.6
   OPTIMIZER:
     TYPE: 'adam'
     Lr: 0.001
     WEIGHT_DECAY: 0
   Out_dim: 2
-  Ray_hidden_dim: 105
+  Ray_hidden_dim: 39 #mpl = 39 trans = 16
   N_task: 2
   Ref_point: "2,2"
   Solver:
     Cheby:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     LS:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     Utility:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
       Ub: 2.01
     KL:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     Cosine:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     Cauchy:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     Log:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     Prod:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     AC:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
       Rho: 0.1
     MC:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
       Rho: 0.1
     HV:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
       Rho: 100
     CPMTL:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     EPO:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
     HVI:
-      Num_hidden_layer: 2
+      Num_hidden_layer: 1
       Last_activation: 'relu'
       Head : 8
       Rho: 200

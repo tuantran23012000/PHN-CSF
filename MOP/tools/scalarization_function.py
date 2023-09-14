@@ -47,7 +47,7 @@ class CS_functions():
         return U
 
     def chebyshev_function(self):
-        
+        #cheby = torch.amax(self.losses * self.ray,dim=1)
         cheby = max(self.losses * self.ray)
         
         return cheby

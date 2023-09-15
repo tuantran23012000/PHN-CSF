@@ -4,14 +4,15 @@ MODE: '3d'
 
 TRAIN:
   Epoch: 10
-  Iter: 20000
+  Iter: 10000
   Alpha: 0.6
   OPTIMIZER:
     TYPE: 'adam'
     Lr: 0.001
     WEIGHT_DECAY: 0
   Out_dim: 3
-  Ray_hidden_dim: 39 #mpl = 38 trans = 16
+  Ray_hidden_dim_mlp: 19 #mpl = 39 trans = 16
+  Ray_hidden_dim_trans: 8
   N_task: 3
   Ref_point: "2,2,2"
   Solver:

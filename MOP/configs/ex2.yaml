@@ -4,14 +4,15 @@ MODE: '2d'
 
 TRAIN:
   Epoch: 10
-  Iter: 20000
+  Iter: 10000
   Alpha: 0.6
   OPTIMIZER:
     TYPE: 'adam'
     Lr: 0.001
     WEIGHT_DECAY: 0
   Out_dim: 2
-  Ray_hidden_dim: 39 #mpl = 39 trans = 16
+  Ray_hidden_dim_mlp: 39 #mpl = 39 trans = 16
+  Ray_hidden_dim_trans: 16
   N_task: 2
   Ref_point: "2,2"
   Solver:

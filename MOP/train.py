@@ -10,6 +10,7 @@ from tools.scalarization_function import CS_functions,EPOSolver
 from tools.hv import HvMaximization
 from hyper_trans import Hyper_trans
 from hyper_trans2 import Hyper_trans2
+from hyper_trans3 import Hyper_trans3
 from tools.utils import find_target
 from tools.metrics import IGD, MED
 def count_parameters(model):
@@ -17,7 +18,10 @@ def count_parameters(model):
 def train_epoch(device, cfg, criterion, pb,pf,model_type):
     name = cfg['NAME']
     mode = cfg['MODE']
-    ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim']
+    if model_type == 'mlp':
+        ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_mlp']
+    else:
+        ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_trans']
     out_dim = cfg['TRAIN']['Out_dim']
     n_tasks = cfg['TRAIN']['N_task']
     num_hidden_layer = cfg['TRAIN']['Solver'][criterion]['Num_hidden_layer']
@@ -36,12 +40,12 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
     else:
         rays_eval = np.load("eval_rays_3d.npy")
     print(rays_eval.shape)
-    rays_eval = torch.from_numpy(rays_eval).float()
-    val_dt = torch.utils.data.TensorDataset(rays_eval)
-    val_loader = torch.utils.data.DataLoader(
-        dataset=val_dt,
-        batch_size=1,num_workers=4,
-        shuffle=False)
+    #rays_eval = torch.from_numpy(rays_eval).float()
+    #val_dt = torch.utils.data.TensorDataset(rays_eval)
+    # val_loader = torch.utils.data.DataLoader(
+    #     dataset=val_dt,
+    #     batch_size=1,num_workers=4,
+    #     shuffle=False)
     best_med = 1000
     if criterion == 'HVI':
         sol = []
@@ -135,7 +139,7 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
         if model_type == 'mlp':
             hnet = Hypernetwork(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
         else:
-            hnet = Hyper_trans2(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
+            hnet = Hyper_trans3(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
         hnet = hnet.to(device)
         print("Model size: ",count_parameters(hnet))
         sol = []
@@ -174,7 +178,7 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
                 for i in range(len(objectives)):
                     obj_values.append(objectives[i][0])
                 losses = torch.stack(obj_values)
-                #print(losses, ray)
+                #print(losses)
                 CS_func = CS_functions(losses,ray)
 
                 if criterion == 'Prod':
@@ -220,51 +224,83 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
                 loss.backward()
                 optimizer.step()
             hnet.eval()
-            targets = []
-            results = []
-            for i, batch in enumerate(val_loader):
-                rays_batch = batch[0].float() # (B,ray_dim)  
-                # print(rays_batch)    
-                # rays_batch = 
-                #output = hnet(rays_batch)[0] # (B,out_dim)
-                output = hnet(rays_batch.squeeze(0)) # (B,out_dim)
-                #print(output)
-                objectives = pb.get_values(output) # (m,B)
-                output = torch.sqrt(output)
-                #objectives = torch.amax(self.losses * self.ray,dim=1)
+            results1 = []
+            targets_epo = []
+            for r in rays_eval:
+                r_inv = 1. / r
+                ray = torch.Tensor(r.tolist()).to(device)
+                #ray = ray.unsqueeze(0)
+                output = hnet(ray)
+                # print(output)
+                if name == 'ex3':
+                    output = torch.sqrt(output)
+                objectives = pb.get_values(output)
                 obj_values = []
                 for i in range(len(objectives)):
-                    obj_values.append(objectives[i])
-                loss_per_sample = torch.stack(obj_values).transpose(1,0) # (B,ray_dim)
-                #print(loss_per_sample.shape)
-                results.append(loss_per_sample.detach().cpu().numpy().tolist())
-                #rays_batch = rays_batch.unsqueeze(0)
-                for ray in rays_batch:
-                    if n_tasks == 2:
-                        ray = ray.reshape(1,2)
-                    else:
-                        ray = ray.reshape(1,3)
-                    r_inv = 1. / (ray.detach().cpu().numpy())
-                    #print(r_inv.shape,pf.shape)
-                    target_epo = find_target(pf, criterion = 'Cheby', context = r_inv.tolist(),cfg=cfg)
-                    #print(target_epo.shape)
-                    #print(target_epo)
-                    targets.append(target_epo.tolist())
-            targets = np.array(targets, dtype='float32')
-            #print(targets.shape,np.stack(results,axis = 0).shape)
-            if n_tasks == 2:
-                results = np.stack(results,axis = 0).reshape(len(val_loader)*1,2)     
-            else:
-                results = np.stack(results,axis = 0).reshape(len(val_loader)*1,3)  
-            med = MED(targets, results)
+                    #print(objectives[i].cpu().detach().numpy().tolist())
+                    obj_values.append(objectives[i].cpu().detach().numpy().tolist()[0])
+                # print(obj_values)
+                results1.append(obj_values)
+                if criterion == "Cauchy":
+                    target_epo = find_target(pf, criterion = criterion, context = r_inv.tolist(),cfg=cfg)
+                else:
+                    target_epo = find_target(pf, criterion = criterion, context = r.tolist(),cfg=cfg)
+                targets_epo.append(target_epo)
+
+            targets_epo = np.array(targets_epo, dtype='float32')
+            tmp = []
+
+            results1 = np.array(results1, dtype='float32')
+            med = MED(targets_epo, results1)
+            #print("MED: ",med)
+            # targets = []
+            # results = []
+            # for i, batch in enumerate(val_loader):
+            #     rays_batch = batch[0].float() # (B,ray_dim)  
+            #     # print(rays_batch)    
+            #     # rays_batch = 
+            #     #output = hnet(rays_batch)[0] # (B,out_dim)
+            #     output = hnet(rays_batch.squeeze(0)) # (B,out_dim)
+            #     #print(output)
+            #     objectives = pb.get_values(output) # (m,B)
+            #     if name == 'ex3':
+            #         output = torch.sqrt(output)
+            #     #output = torch.sqrt(output)
+            #     #objectives = torch.amax(self.losses * self.ray,dim=1)
+            #     obj_values = []
+            #     for i in range(len(objectives)):
+            #         obj_values.append(objectives[i])
+            #     loss_per_sample = torch.stack(obj_values).transpose(1,0) # (B,ray_dim)
+            #     #print(loss_per_sample.shape)
+            #     results.append(loss_per_sample.detach().cpu().numpy().tolist())
+            #     #rays_batch = rays_batch.unsqueeze(0)
+            #     for ray in rays_batch:
+            #         if n_tasks == 2:
+            #             ray = ray.reshape(1,2)
+            #         else:
+            #             ray = ray.reshape(1,3)
+            #         r_inv = 1. / (ray.detach().cpu().numpy())
+            #         #print(r_inv.shape,pf.shape)
+            #         target_epo = find_target(pf, criterion = 'Cheby', context = r_inv.tolist(),cfg=cfg)
+            #         #print(target_epo.shape)
+            #         #print(target_epo)
+            #         targets.append(target_epo.tolist())
+            # targets = np.array(targets, dtype='float32')
+            # print(np.stack(results,axis = 0).shape)
+            # #print(targets.shape,np.stack(results,axis = 0).shape)
+            # if n_tasks == 2:
+            #     results = np.stack(results,axis = 0).reshape(len(val_loader)*1,2)     
+            # else:
+            #     results = np.stack(results,axis = 0).reshape(len(val_loader)*1,3)  
+            # med = MED(targets, results)
             if med < best_med:
                 best_med = med
                 print("Epoch:", epoch)
                 print("MED: ",best_med)
                 if model_type == 'mlp':
-                    torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim'])+".pt"))
+                    torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim_mlp'])+".pt"))
                 else:
-                    torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim'])+"_at.pt"))
+                    torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(cfg['TRAIN']['Ray_hidden_dim_trans'])+"_at.pt"))
                 
     end = time.time()
     time_training = end-start

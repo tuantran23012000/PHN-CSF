@@ -32,9 +32,9 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
     num_ray_test = cfg['EVAL']['Num_ray_test']
     n_tasks = cfg['TRAIN']['N_task']
     if model_type == 'mlp':
-        ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim'])+".pt"
+        ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim_mlp'])+".pt"
     else:
-        ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim'])+"_at.pt"
+        ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim_trans'])+"_at.pt"
     print("Checkpoint path: ",ckpt_path)
     hnet1 = torch.load(ckpt_path,map_location=device)
     hnet1.eval()
@@ -42,12 +42,19 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
     results1 = []
     targets_epo = []
     contexts = get_rays(cfg, num_ray_init)
-    rng = np.random.default_rng()
-    contexts = rng.choice(contexts,num_ray_test)
-    if n_tasks == 3:
-        contexts = np.array([[0.2, 0.5,0.3], [0.4, 0.25,0.35],[0.3,0.2,0.5],[0.55,0.2,0.25]])
+    rng = np.random.default_rng()   
+    #contexts = rng.choice(contexts,num_ray_test)
+    # if n_tasks == 3:
+    #     contexts = np.array([[0.2, 0.5,0.3], [0.4, 0.25,0.35],[0.3,0.2,0.5],[0.55,0.2,0.25]])
+    # else:
+    #     contexts = np.array([[0.5, 0.5], [0.1, 0.9],[0.8,0.2]])
+    if n_tasks == 2:
+        rays_test = np.load("test_rays_2d.npy")
+        
     else:
-        contexts = np.array([[0.5, 0.5], [0.1, 0.9],[0.8,0.2]])
+        rays_test = np.load("test_rays_3d.npy")
+    print(rays_test.shape)
+    contexts = rays_test
     for r in contexts:
         r_inv = 1. / r
         ray = torch.Tensor(r.tolist()).to(device)
@@ -69,14 +76,12 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
             target_epo = find_target(pf, criterion = criterion, context = r.tolist(),cfg=cfg)
         targets_epo.append(target_epo)
 
-    targets_epo = np.array(targets_epo)
+    targets_epo = np.array(targets_epo, dtype='float32')
     tmp = []
 
     results1 = np.array(results1, dtype='float32')
-    med = np.mean(np.sqrt(np.sum(np.square(targets_epo-results1),axis = 1)))
-    print("MED: ",med)
     med = MED(targets_epo, results1)
-    
+    print("MED: ",med)
     d_i = []
     for target in pf:
         d_i.append(np.min(np.sqrt(np.sum(np.square(target-results1),axis = 1))))

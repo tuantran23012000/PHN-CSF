@@ -1,0 +1,1 @@
+python3 main.py --problem ex1 --mode predict --model_type t

@@ -33,6 +33,8 @@ class Hyper_trans2(nn.Module):
                 self.embedding_layer1 =  nn.Sequential(nn.Linear(1, self.ray_hidden_dim),nn.ReLU(inplace=True))
                 self.embedding_layer2 =  nn.Sequential(nn.Linear(1, self.ray_hidden_dim),nn.ReLU(inplace=True))
                 self.embedding_layer3 =  nn.Sequential(nn.Linear(1, self.ray_hidden_dim),nn.ReLU(inplace=True))
+            #self.output_layer =  nn.Linear(self.ray_hidden_dim, self.out_dim)
+            #self.output_layer =  nn.Linear(self.ray_hidden_dim, 1)
             self.output_layer =  nn.Linear(self.ray_hidden_dim, self.out_dim)
             self.attention = nn.MultiheadAttention(embed_dim=self.ray_hidden_dim, num_heads=1)
             self.ffn1 = nn.Linear(self.ray_hidden_dim, self.ray_hidden_dim)
@@ -54,14 +56,20 @@ class Hyper_trans2(nn.Module):
             x = self.ffn2(x)
             x = x + x_
             x = self.output_layer(x)
+            # print(x.shape)
+            # x = x.transpose(1,0)
+            # print(x.shape)
+            # x = self.output_layer1(x)
+            # print(x.shape)
             if self.last_activation == 'relu':
                     x = F.relu(x)
             elif self.last_activation == 'sigmoid':
                     x = F.sigmoid(x)
             elif self.last_activation == 'softmax':
-                    x = F.softmax(x)
+                    x = F.softmax(x)    
             else:
                     x = x
             x = torch.mean(x,dim=0)
             x = x.unsqueeze(0)
+            #print(x.shape)
             return x

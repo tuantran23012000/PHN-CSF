@@ -49,10 +49,10 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
     # else:
     #     contexts = np.array([[0.5, 0.5], [0.1, 0.9],[0.8,0.2]])
     if n_tasks == 2:
-        rays_test = np.load("test_rays_2d.npy")
+        rays_test = np.load("./datasets/test/test_rays_2d.npy")
         
     else:
-        rays_test = np.load("test_rays_3d.npy")
+        rays_test = np.load("./datasets/test/test_rays_3d.npy")
     print(rays_test.shape)
     contexts = rays_test
     for r in contexts:

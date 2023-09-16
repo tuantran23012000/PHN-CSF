@@ -9,7 +9,7 @@ import torch
 from tools.scalarization_function import CS_functions,EPOSolver
 from tools.hv import HvMaximization
 from hyper_trans import Hyper_trans
-from hyper_trans2 import Hyper_trans2
+from hyper_trans2 import Hyper_trans2, Hyper_trans4
 from hyper_trans3 import Hyper_trans3
 from tools.utils import find_target
 from tools.metrics import IGD, MED
@@ -21,10 +21,11 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
     mode = cfg['MODE']
     if model_type == 'mlp':
         ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_mlp']
-        ray_hidden_dims = [9, 19, 39, 78]
+        ray_hidden_dims = [9*(i+1) for i in range(10)]
     else:
-        ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_trans']
-        ray_hidden_dims = [4, 8, 16, 32]
+        # ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_trans']
+        ray_hidden_dims = [4*(i+1) for i in range(10)]
+        #ray_hidden_dims = [4]
     out_dim = cfg['TRAIN']['Out_dim']
     n_tasks = cfg['TRAIN']['N_task']
     num_hidden_layer = cfg['TRAIN']['Solver'][criterion]['Num_hidden_layer']

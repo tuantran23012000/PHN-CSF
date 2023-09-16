@@ -1,1 +1,1 @@
-python3 main.py --problem ex3 --mode train --model_type mlp
+python3 main.py --problem ex1 --mode train --model_type transformer

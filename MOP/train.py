@@ -154,7 +154,7 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
             if model_type == 'mlp':
                 hnet = Hypernetwork(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
             else:
-                hnet = Hyper_trans2(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
+                hnet = Hyper_trans4(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
             hnet = hnet.to(device)
             print("Model size: ",count_parameters(hnet))
             sol = []
@@ -257,7 +257,7 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
                     if model_type == 'mlp':
                         torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(ray_hidden_dim)+".pt"))
                     else:
-                        torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(ray_hidden_dim)+"_at.pt"))
+                        torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(ray_hidden_dim)+"_at_position.pt"))
                 
     end = time.time()
     time_training = end-start

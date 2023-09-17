@@ -32,61 +32,79 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
     num_ray_test = cfg['EVAL']['Num_ray_test']
     n_tasks = cfg['TRAIN']['N_task']
     if model_type == 'mlp':
-        ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim_mlp'])+".pt"
+        ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_mlp']
+        ray_hidden_dims = [9*(i+1) for i in range(10)]
     else:
-        ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim_trans'])+"_at.pt"
-    print("Checkpoint path: ",ckpt_path)
-    hnet1 = torch.load(ckpt_path,map_location=device)
-    hnet1.eval()
-    print("Model size: ",count_parameters(hnet1))
-    results1 = []
-    targets_epo = []
-    contexts = get_rays(cfg, num_ray_init)
-    rng = np.random.default_rng()   
-    #contexts = rng.choice(contexts,num_ray_test)
-    # if n_tasks == 3:
-    #     contexts = np.array([[0.2, 0.5,0.3], [0.4, 0.25,0.35],[0.3,0.2,0.5],[0.55,0.2,0.25]])
-    # else:
-    #     contexts = np.array([[0.5, 0.5], [0.1, 0.9],[0.8,0.2]])
-    if n_tasks == 2:
-        rays_test = np.load("./datasets/test/test_rays_2d.npy")
-        
-    else:
-        rays_test = np.load("./datasets/test/test_rays_3d.npy")
-    print(rays_test.shape)
-    contexts = rays_test
-    for r in contexts:
-        r_inv = 1. / r
-        ray = torch.Tensor(r.tolist()).to(device)
-        #ray = ray.unsqueeze(0)
-        output = hnet1(ray)
-        # print(output)
-        if name == 'ex3':
-            output = torch.sqrt(output)
-        objectives = pb.get_values(output)
-        obj_values = []
-        for i in range(len(objectives)):
-            #print(objectives[i].cpu().detach().numpy().tolist())
-            obj_values.append(objectives[i].cpu().detach().numpy().tolist()[0])
-        # print(obj_values)
-        results1.append(obj_values)
-        if criterion == "Cauchy":
-            target_epo = find_target(pf, criterion = criterion, context = r_inv.tolist(),cfg=cfg)
+        # ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_trans']
+        ray_hidden_dims = [4*(i+1) for i in range(10)]
+        #ray_hidden_dims = [4]
+    meds = []
+    params = []
+    for ray_hidden_dim in ray_hidden_dims:
+
+        if model_type == 'mlp':
+            ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(ray_hidden_dim)+".pt"
         else:
-            target_epo = find_target(pf, criterion = criterion, context = r.tolist(),cfg=cfg)
-        targets_epo.append(target_epo)
+            #ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim_trans'])+"_at_position.pt"
+            ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(ray_hidden_dim)+"_at_position.pt"
+        print("Checkpoint path: ",ckpt_path)
+        hnet1 = torch.load(ckpt_path,map_location=device)
+        hnet1.eval()
+        print("Model size: ",count_parameters(hnet1))
+        params.append(count_parameters(hnet1))
+        results1 = []
+        targets_epo = []
+        contexts = get_rays(cfg, num_ray_init)
+        rng = np.random.default_rng()   
+        #contexts = rng.choice(contexts,num_ray_test)
+        # if n_tasks == 3:
+        #     contexts = np.array([[0.2, 0.5,0.3], [0.4, 0.25,0.35],[0.3,0.2,0.5],[0.55,0.2,0.25]])
+        # else:
+        #     contexts = np.array([[0.5, 0.5], [0.1, 0.9],[0.8,0.2]])
+        if n_tasks == 2:
+            rays_test = np.load("./datasets/test/test_rays_2d.npy")
+            
+        else:
+            rays_test = np.load("./datasets/test/test_rays_3d.npy")
+        print(rays_test.shape)
+        contexts = rays_test
+        for r in contexts:
+            r_inv = 1. / r
+            ray = torch.Tensor(r.tolist()).to(device)
+            #ray = ray.unsqueeze(0)
+            output = hnet1(ray)
+            # print(output)
+            if name == 'ex3':
+                output = torch.sqrt(output)
+            objectives = pb.get_values(output)
+            obj_values = []
+            for i in range(len(objectives)):
+                #print(objectives[i].cpu().detach().numpy().tolist())
+                obj_values.append(objectives[i].cpu().detach().numpy().tolist()[0])
+            # print(obj_values)
+            results1.append(obj_values)
+            if criterion == "Cauchy":
+                target_epo = find_target(pf, criterion = criterion, context = r_inv.tolist(),cfg=cfg)
+            else:
+                target_epo = find_target(pf, criterion = criterion, context = r.tolist(),cfg=cfg)
+            targets_epo.append(target_epo)
 
-    targets_epo = np.array(targets_epo, dtype='float32')
-    tmp = []
+        targets_epo = np.array(targets_epo, dtype='float32')
+        tmp = []
 
-    results1 = np.array(results1, dtype='float32')
-    med = MED(targets_epo, results1)
-    print("MED: ",med)
-    d_i = []
-    for target in pf:
-        d_i.append(np.min(np.sqrt(np.sum(np.square(target-results1),axis = 1))))
-    igd = np.mean(np.array(d_i))
-    
-    igd = IGD(pf, results1)
-    print("IGD:",igd)
-    return igd, targets_epo, results1, contexts, med
+        results1 = np.array(results1, dtype='float32')
+        med = MED(targets_epo, results1)
+        meds.append(med)
+        print("MED: ",med)
+        d_i = []
+        for target in pf:
+            d_i.append(np.min(np.sqrt(np.sum(np.square(target-results1),axis = 1))))
+        igd = np.mean(np.array(d_i))
+        
+        igd = IGD(pf, results1)
+        print("IGD:",igd)
+    MEDS = np.array(meds)
+    PARAMS = np.array(params)
+    np.save("med_"+str(model_type)+"_position.npy",MEDS)
+    np.save("param_"+str(model_type)+"_position.npy",PARAMS)
+    return igd, targets_epo, results1, contexts, med3

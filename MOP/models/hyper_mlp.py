@@ -16,7 +16,7 @@ class LayerNorm(nn.Module):
         out = (x - mean) / torch.sqrt(var + self.eps)
         out = self.gamma * out + self.beta
         return out
-class Hypernetwork(nn.Module):
+class Hyper_mlp(nn.Module):
       "Hypernetwork"
 
       def __init__(self, ray_hidden_dim=100, out_dim = 2,n_tasks=2,num_hidden_layer=2,last_activation='relu'):

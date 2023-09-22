@@ -15,9 +15,9 @@ def get_ray(n,alpha_r,num_ray):
     # train_dt = torch.utils.data.TensorDataset(rays_train)
     return rays_sort
 if __name__ == "__main__":
-    train_dt = get_ray(2,0.6,20000)
+    train_dt = get_ray(2,0.6,4000)
     print(train_dt.shape)
-    np.save("train_rays_2d.npy",train_dt)
-    train_dt = get_ray(3,0.6,20000)
+    np.save("./datasets/train/train_rays_2d.npy",train_dt)
+    train_dt = get_ray(3,0.6,4000)
     print(train_dt.shape)
-    np.save("train_rays_3d.npy",train_dt)
+    np.save("./datasets/train/train_rays_3d.npy",train_dt)

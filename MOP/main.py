@@ -13,13 +13,18 @@ from predict import predict_result
 def run_train(cfg,criterion,device,problem,model_type):
     pb = Problem(problem, cfg['MODE'])
     pf = pb.get_pf()
+    name = cfg['NAME']
     if cfg['MODE'] == '2d':
-        sol, time_training = train_epoch(device,cfg,criterion,pb,pf,model_type)
-        print("Time: ",time_training)  
+        MEDS,PARAMS = train_epoch(device,cfg,criterion,pb,pf,model_type)
+        np.save(name+"_med_"+str(model_type)+".npy",MEDS)
+        np.save(name+"_param_"+str(model_type)+".npy",PARAMS)
+        #print("Time: ",time_training)  
         #visualize_2d(sol,pf,cfg,criterion,pb)
     else:
-        sol, time_training = train_epoch(device,cfg,criterion,pb,pf,model_type)
-        print("Time: ",time_training)  
+        MEDS,PARAMS = train_epoch(device,cfg,criterion,pb,pf,model_type)
+        np.save(name+"_med_"+str(model_type)+".npy",MEDS)
+        np.save(name+"_param_"+str(model_type)+".npy",PARAMS)
+        #print("Time: ",time_training)  
         #visualize_3d(sol,pf,cfg,criterion,pb)
 def run_predict(cfg,criterion,device,problem,model_type):
     pb = Problem(problem, cfg['MODE'])
@@ -60,11 +65,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--solver", type=str, choices=["LS", "KL","Cheby","Utility","Cosine","Cauchy","Prod","Log","AC","MC","HV","CPMTL","EPO","HVI"],
-        default="Cheby", help="solver"
+        default="LS", help="solver"
     )
     parser.add_argument(
         "--problem", type=str, choices=["ex1", "ex2","ex3","ex4","ZDT1","ZDT2","ZDT3","DTLZ2"],
-        default="ex3", help="solver"
+        default="ex2", help="solver"
     )
     parser.add_argument(
         "--mode", type=str,
@@ -79,10 +84,13 @@ if __name__ == "__main__":
     print("Scalar funtion: ",criterion)
     problem = args.problem
     config_file = "./configs/"+str(problem)+".yaml"
-    model_type = args.model_type
+    # model_type = args.model_type
+    
     with open(config_file) as stream:
         cfg = yaml.safe_load(stream)
-    if args.mode == "train":
-        run_train(cfg,criterion,device,problem,model_type)
-    else:
-        run_predict(cfg,criterion,device,problem,model_type)
+    model_types = ['mlp', 'trans', 'trans_posi']
+    for model_type in model_types:
+        if args.mode == "train":
+            run_train(cfg,criterion,device,problem,model_type)
+        else:
+            run_predict(cfg,criterion,device,problem,model_type)

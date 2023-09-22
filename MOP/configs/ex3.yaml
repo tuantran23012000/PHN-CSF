@@ -3,7 +3,7 @@ NAME: 'ex3'
 MODE: '3d'
 
 TRAIN:
-  Epoch: 10
+  Epoch: 50
   Iter: 10000
   Alpha: 0.6
   OPTIMIZER:

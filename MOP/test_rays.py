@@ -21,11 +21,11 @@ def get_ref_dirs(n_obj,num_ray_init):
         ref_dirs = np.array(tmp)
     return ref_dirs
 n = 3
-ref_dirs = get_ref_dirs(n,25)
+ref_dirs = get_ref_dirs(n,61)
 print(ref_dirs.shape)
 # print(ref_dirs)
-np.save("test_rays_3d.npy",ref_dirs)
+np.save("./datasets/test/test_rays_3d.npy",ref_dirs)
 n = 2
-ref_dirs = get_ref_dirs(n,100)
+ref_dirs = get_ref_dirs(n,500)
 print(ref_dirs.shape)
-np.save("test_rays_2d.npy",ref_dirs)
+np.save("./datasets/test/test_rays_2d.npy",ref_dirs)

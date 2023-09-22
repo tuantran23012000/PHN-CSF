@@ -44,8 +44,10 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
 
         if model_type == 'mlp':
             ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(ray_hidden_dim)+".pt"
-        else:
+        elif model_type == 'trans':
             #ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(cfg['TRAIN']['Ray_hidden_dim_trans'])+"_at_position.pt"
+            ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(ray_hidden_dim)+"_at.pt"
+        else:
             ckpt_path = "./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_"+ str(ray_hidden_dim)+"_at_position.pt"
         print("Checkpoint path: ",ckpt_path)
         hnet1 = torch.load(ckpt_path,map_location=device)
@@ -105,6 +107,6 @@ def predict_result(device,cfg,criterion,pb,pf,model_type,num_e=None,contexts = [
         print("IGD:",igd)
     MEDS = np.array(meds)
     PARAMS = np.array(params)
-    np.save("med_"+str(model_type)+"_position.npy",MEDS)
-    np.save("param_"+str(model_type)+"_position.npy",PARAMS)
-    return igd, targets_epo, results1, contexts, med3
+    np.save("med_"+str(model_type)+".npy",MEDS)
+    np.save("param_"+str(model_type)+".npy",PARAMS)
+    return igd, targets_epo, results1, contexts, med

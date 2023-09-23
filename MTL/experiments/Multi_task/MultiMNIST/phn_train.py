@@ -9,9 +9,13 @@ from tqdm import trange
 import os
 from metrics import hypervolumn
 from data import Dataset
-from models import (
+from models.hyper_mlp import (
     LeNetHyper,
     LeNetTarget,
+)
+from models.hyper_trans import (
+    LeNetHyper_trans,
+    LeNetTarget_trans,
 )
 from utils import (
     circle_points,
@@ -76,13 +80,25 @@ def train(
     out_dir: str,
     device: torch.device,
     eval_every: int,
+    model_type: str,
+    resume: bool,
 ) -> None:
     # ----
     # Nets
     # ----
     if model == "lenet":
-        hnet = LeNetHyper([9, 5], ray_hidden_dim=hidden_dim)
-        net = LeNetTarget([9, 5])
+        if model_type == 'mlp':
+            hnet = LeNetHyper([9, 5], ray_hidden_dim=hidden_dim)
+            if resume:
+                ckpt = torch.load(os.path.join(out_dir,'best_model_cheby_multi_'+str(dataset)+"_"+str(model_type)+'.pkl'),map_location=device)
+                hnet.load_state_dict(ckpt['state_dicts'])
+            net = LeNetTarget([9, 5])
+        else:
+            hnet = LeNetHyper_trans([9, 5], ray_hidden_dim=hidden_dim)
+            if resume:
+                ckpt = torch.load(os.path.join(out_dir,'best_model_cheby_multi_'+str(dataset)+"_"+str(model_type)+'.pkl'),map_location=device)
+                hnet.load_state_dict(ckpt['state_dicts'])
+            net = LeNetTarget_trans([9, 5])
 
     logging.info(f"HN size: {count_parameters(hnet)}")
 
@@ -121,10 +137,15 @@ def train(
     # Train loop
     # ----------
     epoch_iter = trange(epochs)
-    best_hv_loss = -1
+    best_hv_loss = -1 #-1
     start = time.time()
+
     for epoch in epoch_iter:
         losses_epoch = []
+        loss_total = 0
+        l1_total = 0
+        l2_total = 0
+        count = 0
         for i, batch in enumerate(train_loader):
             hnet.train()
             optimizer.zero_grad()
@@ -147,17 +168,24 @@ def train(
 
             l1 = loss1(logit1, ys[:, 0])
             l2 = loss2(logit2, ys[:, 1])
+            #print(l1.shape)
             losses = torch.stack((l1, l2))
 
             ray = ray.squeeze(0)
             loss = solver(losses, ray, list(hnet.parameters()))
             loss.backward()
-
-            epoch_iter.set_description(
-                f"total weighted loss: {loss.item():.3f}, loss 1: {l1.item():.3f}, loss 2: {l2.item():.3f}"
-            )
+            loss_total += loss.item()
+            l1_total += l1.item()
+            l2_total += l2.item()
+            count += 1
+            # epoch_iter.set_description(
+            #     f"total weighted loss: {loss.item():.3f}, loss 1: {l1.item():.3f}, loss 2: {l2.item():.3f}"
+            # )
 
             optimizer.step()
+        # epoch_iter.set_description(
+        #         f"total weighted mean loss: {loss_total/count:.5f}, mean loss 1: {l1/count:.5f}, mean loss 2: {l2/count:.5f}"
+        #     )
         loss_hv = evaluate_hv(
                     hypernet=hnet,
                     targetnet=net,
@@ -166,14 +194,19 @@ def train(
                     device=device,
                 )
         hv_loss = hypervolumn(np.array(loss_hv), type='loss', ref=np.ones(2) * 2)
-        print("Epoch"+str(epoch)+": ",hv_loss)
+        #print("Epoch: "+str(epoch)+": ",hv_loss)
+        epoch_iter.set_description(
+                f"Epoch: {epoch:.0f}, Hv_eval: {hv_loss:.5f}, total mean loss: {loss_total/count:.5f}, mean l1: {l1/count:.5f}, mean l2: {l2/count:.5f}"
+            )
         if hv_loss>best_hv_loss:
             best_hv_loss = hv_loss
             print("Update best model")
             # torch.save(hnet,os.path.join(out_dir,"best_model_"+str(solver_type)+"_multi_"+str(dataset)+".pt"))
             save_dict = {'state_dicts': hnet.state_dict()}
-            torch.save(save_dict,os.path.join(out_dir,"best_model_"+str(solver_type)+"_multi_"+str(dataset)+".pkl"))
-
+            if model_type == 'mlp':
+                torch.save(save_dict,os.path.join(out_dir,"best_model_"+str(solver_type)+"_multi_"+str(dataset)+"_"+str(model_type)+".pkl"))
+            else:
+                torch.save(save_dict,os.path.join(out_dir,"best_model_"+str(solver_type)+"_multi_"+str(dataset)+"_"+str(model_type)+".pkl"))
 def load_data(dataset,data_path):
     # LOAD DATASET
     # ------------
@@ -194,21 +227,25 @@ def load_data(dataset,data_path):
     batch_size = 256
     train_loader = torch.utils.data.DataLoader(
         dataset=train_set,
-        batch_size=batch_size,num_workers=4,
+        batch_size=batch_size,num_workers=1,
         shuffle=True)
     val_loader = torch.utils.data.DataLoader(
         dataset=val_set,
-        batch_size=batch_size,num_workers=4,
-        shuffle=True)
+        batch_size=batch_size,num_workers=1,
+        shuffle=False)
     test_loader = torch.utils.data.DataLoader(
         dataset=test_set,
-        batch_size=batch_size,num_workers=4,
+        batch_size=batch_size,num_workers=1,
         shuffle=False)
     return train_loader,val_loader, test_loader
-def HPN_train(device,data_path,out_results,solver,batch_size):
+def HPN_train(device,data_path,out_results,solver,batch_size,model_type,resume):
     set_seed(42)
     set_logger()
-    datasets = ['mnist','fashion','fashion_mnist']
+    datasets = ['fashion']
+    if model_type == 'mlp':
+        hidden_dim = 265
+    else:
+        hidden_dim = 256
     for dataset in datasets:
         print("Dataset: ",dataset)
         print("Solver: ",solver)
@@ -217,8 +254,8 @@ def HPN_train(device,data_path,out_results,solver,batch_size):
             dataset = dataset,
             path=data_path,
             solver_type=solver,
-            epochs=150,
-            hidden_dim=100,
+            epochs=100,
+            hidden_dim=hidden_dim,
             model='lenet',
             lr=1e-4,
             wd=0.0,
@@ -230,6 +267,8 @@ def HPN_train(device,data_path,out_results,solver,batch_size):
             n_rays=25,
             alpha=0.2,
             out_dir=out_results,
+            model_type = model_type,
+            resume = resume,
         )
         end = time.time()
         print("Runtime training: ",end-start)
@@ -239,7 +278,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data-path",
         type=str,
-        default="/home/tuantran/Documents/OPT/Multi_Gradient_Descent/HPN-CSF/MTL/dataset/Multi_task",
+        default="/home/tuantran/PHN-CSF/MTL/experiments/dataset/Multi_task/MultiMNIST",
         help="path to data",
     )
     parser.add_argument("--batch-size", type=int, default=256, help="batch size")
@@ -250,13 +289,22 @@ if __name__ == "__main__":
     help="path to output"
 )
     parser.add_argument(
-        "--solver", type=str, choices=["ls", "epo","cheby","utility"], default="ls", help="HPN solver"
+        "--solver", type=str, choices=["ls", "epo","cheby","utility"], default="cheby", help="HPN solver"
+    )
+    parser.add_argument(
+        "--model_type", type=str, choices=["mlp", "trans","trans_posi"], default="mlp", help="model type"
+    )
+    parser.add_argument(
+        "--resume", type=bool, default=False, help="resume training"
     )
     args = parser.parse_args()
+    model_type = args.model_type
+    resume = args.resume
+    print("Model type: ",model_type)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     data_path = args.data_path
     out_results = args.out_dir
     hpn_solver = args.solver
     batch_size = args.batch_size
-    HPN_train(device,data_path,out_results,hpn_solver,batch_size)
+    HPN_train(device,data_path,out_results,hpn_solver,batch_size,model_type,resume)
 

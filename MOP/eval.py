@@ -22,4 +22,5 @@ def eval(hnet,criterion,pb,pf,cfg,val_loader,device):
         target = find_target(pf, criterion = criterion, context = r,cfg=cfg)
         target = np.array(target)
         targets.append(target)
+    
     return results, targets

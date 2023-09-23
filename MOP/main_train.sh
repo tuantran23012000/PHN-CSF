@@ -1,1 +1,1 @@
-python3 -W ignore main.py --problem ex3 --mode train
+python3 -W ignore main.py --problem ex1 --mode train --model_type mlp

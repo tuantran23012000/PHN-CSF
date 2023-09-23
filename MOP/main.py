@@ -84,13 +84,13 @@ if __name__ == "__main__":
     print("Scalar funtion: ",criterion)
     problem = args.problem
     config_file = "./configs/"+str(problem)+".yaml"
-    # model_type = args.model_type
+    model_type = args.model_type
     
     with open(config_file) as stream:
         cfg = yaml.safe_load(stream)
-    model_types = ['mlp', 'trans', 'trans_posi']
-    for model_type in model_types:
-        if args.mode == "train":
-            run_train(cfg,criterion,device,problem,model_type)
-        else:
-            run_predict(cfg,criterion,device,problem,model_type)
+    # model_types = ['mlp', 'trans', 'trans_posi']
+    # for model_type in model_types:
+    if args.mode == "train":
+        run_train(cfg,criterion,device,problem,model_type)
+    else:
+        run_predict(cfg,criterion,device,problem,model_type)

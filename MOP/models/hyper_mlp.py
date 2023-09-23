@@ -43,5 +43,5 @@ class Hyper_mlp(nn.Module):
                   x = F.softmax(x)
             else:
                   x = x
-            x = x.unsqueeze(0)
+            #x = x.unsqueeze(0)
             return x

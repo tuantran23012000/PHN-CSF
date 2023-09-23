@@ -38,10 +38,10 @@ class Hyper_trans(nn.Module):
             self.ffn1 = nn.Linear(self.ray_hidden_dim, self.ray_hidden_dim)
             self.ffn2 = nn.Linear(self.ray_hidden_dim, self.ray_hidden_dim)
       def forward(self, ray):
-            if ray.shape[0] == 2:
-                x = torch.stack((self.embedding_layer1(ray[0].unsqueeze(0)),self.embedding_layer2(ray[1].unsqueeze(0))))
+            if ray.shape[1] == 2:
+                x = torch.stack((self.embedding_layer1(ray[:,0].unsqueeze(1)),self.embedding_layer2(ray[:,1].unsqueeze(1))))
             else:
-                x = torch.stack((self.embedding_layer1(ray[0].unsqueeze(0)),self.embedding_layer2(ray[1].unsqueeze(0)),self.embedding_layer3(ray[2].unsqueeze(0))))
+                x = torch.stack((self.embedding_layer1(ray[:,0].unsqueeze(1)),self.embedding_layer2(ray[:,1].unsqueeze(1)),self.embedding_layer3(ray[:,2].unsqueeze(1))))
             x_ = x
             
             x,_ = self.attention(x,x,x)
@@ -61,5 +61,5 @@ class Hyper_trans(nn.Module):
             else:
                     x = x
             x = torch.mean(x,dim=0)
-            x = x.unsqueeze(0)
+            #x = x.unsqueeze(0)
             return x

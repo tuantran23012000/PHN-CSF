@@ -23,11 +23,11 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
     if model_type == 'mlp':
         # ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_mlp']
         ray_hidden_dims = [2*(i+1) for i in range(4,150)]
-        ray_hidden_dims = [100]
+        ray_hidden_dims = [98]
     else:
         # ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_trans']
         # ray_hidden_dims = [2*(i+1) for i in range(4,50)]
-        ray_hidden_dims = [39]
+        ray_hidden_dims = [40]
     out_dim = cfg['TRAIN']['Out_dim']
     n_tasks = cfg['TRAIN']['N_task']
     num_hidden_layer = cfg['TRAIN']['Solver'][criterion]['Num_hidden_layer']
@@ -74,7 +74,7 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
     
     PARAMS = []
     MEDS = []
-    for ray_hidden_dim in tqdm(ray_hidden_dims):
+    for ray_hidden_dim in ray_hidden_dims:
         if model_type == 'mlp':
             hnet = Hyper_mlp(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
             hnet_copy = Hyper_mlp(ray_hidden_dim = ray_hidden_dim, out_dim = out_dim, n_tasks = n_tasks,num_hidden_layer=num_hidden_layer,last_activation=last_activation)
@@ -88,7 +88,7 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
         hnet_copy = hnet_copy.to(device)
         param = count_parameters(hnet)
         PARAMS.append(param)
-        #print("Model size: ",count_parameters(hnet))
+        print("Model size: ",param)
         sol = []
         if type_opt == 'adam':
             optimizer = torch.optim.Adam(hnet.parameters(), lr = lr, weight_decay=wd) 
@@ -99,7 +99,7 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
         print("Dim: ",ray_hidden_dim)
         best_med = 1000
         test_med = []
-        for epoch in range(epochs):
+        for epoch in tqdm(range(epochs)):
             for i, batch in enumerate(train_loader):
                 ray =  batch[0].squeeze(0).to(device)
                 hnet.train()
@@ -158,10 +158,12 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
                 loss.backward()
                 optimizer.step()
             results, targets = eval(hnet,criterion,pb,pf,cfg,test_loader,device)
-            targets = np.array(targets, dtype='float32').reshape(rays_eval.shape[0],n_tasks)
-            results = np.array(results, dtype='float32').reshape(rays_eval.shape[0],n_tasks)
+            #print(np.array(results, dtype='float32').shape)
+            targets = np.array(targets, dtype='float32').reshape(rays_test.shape[0],n_tasks)
+            results = np.array(results, dtype='float32').reshape(rays_test.shape[0],n_tasks)
             med = MED(targets, results)
             MEDS.append(med)
+            #print("PARAM:{}, MED:{}".format(str(param),str(med)))
         #     if med < best_med:
         #         best_med = med
         #         hnet_copy = copy.deepcopy(hnet)

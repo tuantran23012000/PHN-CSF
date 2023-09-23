@@ -100,7 +100,7 @@ def circle_points(K, min_angle=None, max_angle=None):
     return np.c_[x, y]
 
 def find_target(pf, criterion, context,cfg):
-
+    pfs = []
     if criterion == 'Log':
         F = np.sum(context*np.log(pf+1),axis = 1)
 
@@ -152,9 +152,15 @@ def find_target(pf, criterion, context,cfg):
         # F = -np.sum((dynamic_weight*pf),axis =1) + rho*cosine
         F = -np.sum((dynamic_weight*pf),axis =1) + rho*cosine
     elif criterion == 'Cheby':
-        F = np.max(context*pf,axis = 1)
+        for r in context:
+            #F = r*pf
+            F = np.max(r*pf,axis = 1)
+            pfs.append(pf[F.argmin(), :])
     elif criterion == 'LS':
-        F = np.sum(context*pf,axis = 1)
+        for r in context:
+            #F = r*pf
+            F = np.sum(r*pf,axis = 1)
+            pfs.append(pf[F.argmin(), :])
 
     elif criterion == 'Utility':
         ub = cfg['TRAIN']['Solver'][criterion]['Ub']
@@ -183,7 +189,7 @@ def find_target(pf, criterion, context,cfg):
         r_s = np.sum(np.array(context)**2)
         F = 1 - (rl)**2 / (l_s*r_s)
 
-    return pf[F.argmin(), :]
+    return pfs
 def get_d_paretomtl(pf,grads,value,normalized_rest_weights,normalized_current_weight):
     w = normalized_rest_weights - normalized_current_weight
         

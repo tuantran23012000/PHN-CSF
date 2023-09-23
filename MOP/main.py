@@ -15,15 +15,15 @@ def run_train(cfg,criterion,device,problem,model_type):
     pf = pb.get_pf()
     name = cfg['NAME']
     if cfg['MODE'] == '2d':
-        MEDS,PARAMS = train_epoch(device,cfg,criterion,pb,pf,model_type)
+        MEDS = train_epoch(device,cfg,criterion,pb,pf,model_type)
         np.save(name+"_med_"+str(model_type)+".npy",MEDS)
-        np.save(name+"_param_"+str(model_type)+".npy",PARAMS)
+        #np.save(name+"_param_"+str(model_type)+".npy",PARAMS)
         #print("Time: ",time_training)  
         #visualize_2d(sol,pf,cfg,criterion,pb)
     else:
-        MEDS,PARAMS = train_epoch(device,cfg,criterion,pb,pf,model_type)
+        MEDS = train_epoch(device,cfg,criterion,pb,pf,model_type)
         np.save(name+"_med_"+str(model_type)+".npy",MEDS)
-        np.save(name+"_param_"+str(model_type)+".npy",PARAMS)
+        #np.save(name+"_param_"+str(model_type)+".npy",PARAMS)
         #print("Time: ",time_training)  
         #visualize_3d(sol,pf,cfg,criterion,pb)
 def run_predict(cfg,criterion,device,problem,model_type):

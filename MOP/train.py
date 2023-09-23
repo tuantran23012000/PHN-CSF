@@ -23,9 +23,11 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
     if model_type == 'mlp':
         # ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_mlp']
         ray_hidden_dims = [2*(i+1) for i in range(4,150)]
+        ray_hidden_dims = [100]
     else:
         # ray_hidden_dim = cfg['TRAIN']['Ray_hidden_dim_trans']
-        ray_hidden_dims = [2*(i+1) for i in range(4,50)]
+        # ray_hidden_dims = [2*(i+1) for i in range(4,50)]
+        ray_hidden_dims = [39]
     out_dim = cfg['TRAIN']['Out_dim']
     n_tasks = cfg['TRAIN']['N_task']
     num_hidden_layer = cfg['TRAIN']['Solver'][criterion]['Num_hidden_layer']
@@ -96,9 +98,10 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
 
         print("Dim: ",ray_hidden_dim)
         best_med = 1000
+        test_med = []
         for epoch in range(epochs):
-            for r in rays_train:        
-                ray = torch.Tensor(r.tolist()).to(device)
+            for i, batch in enumerate(train_loader):
+                ray =  batch[0].squeeze(0).to(device)
                 hnet.train()
                 optimizer.zero_grad()
                 output = hnet(ray)
@@ -107,12 +110,12 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
                 if epoch == epochs - 1:
                     sol.append(output.cpu().detach().numpy().tolist()[0])
                 ray_cs = 1/ray
-                ep_ray = 1.1 * ray_cs / np.linalg.norm(ray_cs)
+                #ep_ray = 1.1 * ray_cs / np.linalg.norm(ray_cs)
                 ray = ray.squeeze(0)
                 obj_values = []
                 objectives = pb.get_values(output)
                 for i in range(len(objectives)):
-                    obj_values.append(objectives[i][0])
+                    obj_values.append(objectives[i])
                 losses = torch.stack(obj_values)
                 CS_func = CS_functions(losses,ray)
 
@@ -136,9 +139,9 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
                     dynamic_weight = mo_opt.compute_weights(loss_numpy[0,:,:])
                     loss = CS_func.hv_function(dynamic_weight.reshape(1,3),rho = rho)
                 elif criterion == 'LS':
-                    loss = CS_func.linear_function()
+                    loss = CS_func.linear_function().mean()
                 elif criterion == 'Cheby':
-                    loss = CS_func.chebyshev_function()
+                    loss = CS_func.chebyshev_function().mean()
                 elif criterion == 'Utility':
                     ub = cfg['TRAIN']['Solver'][criterion]['Ub']
                     loss = CS_func.utility_function(ub = ub)
@@ -151,29 +154,23 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
                     loss = CS_func.cauchy_schwarz_function()
                 elif criterion == 'EPO':
                     solver = EPOSolver(n_tasks=n_tasks, n_params=count_parameters(hnet))
-                    loss = solver(losses, ray, list(hnet.parameters()))
+                    loss = solver(losses, ray, list(hnet.parameters())).mean()
                 loss.backward()
                 optimizer.step()
-            results, targets = eval(hnet,criterion,pb,pf,cfg,rays_eval,device)
-            targets = np.array(targets, dtype='float32')
-            results = np.array(results, dtype='float32')
+            results, targets = eval(hnet,criterion,pb,pf,cfg,test_loader,device)
+            targets = np.array(targets, dtype='float32').reshape(rays_eval.shape[0],n_tasks)
+            results = np.array(results, dtype='float32').reshape(rays_eval.shape[0],n_tasks)
             med = MED(targets, results)
-            if med < best_med:
-                best_med = med
-                # print("Epoch:", epoch)
-                # print("MED: ",best_med)
-                hnet_copy = copy.deepcopy(hnet)
-                #print(hnet_copy)
-                # if model_type == 'mlp':
-                #     torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(ray_hidden_dim)+".pt"))
-                # elif model_type == 'trans':
-                #     torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(ray_hidden_dim)+"_at.pt"))
-                # else:
-                #     torch.save(hnet,("./save_weights/best_weight_"+str(criterion)+"_"+str(mode)+"_"+str(name)+"_" + str(ray_hidden_dim)+"_at_position.pt"))
-        results_test, targets_test = test(hnet_copy,criterion,pb,pf,cfg,rays_eval,device)   
-        med_test = MED(targets_test, results_test)
-        print("PARAM:{}, MED:{}".format(str(param),str(med_test)))
-        MEDS.append(med_test)
-    MEDS = np.array(MEDS)
-    PARAMS = np.array(PARAMS)
-    return MEDS,PARAMS
+            MEDS.append(med)
+        #     if med < best_med:
+        #         best_med = med
+        #         hnet_copy = copy.deepcopy(hnet)
+        # results_test, targets_test = test(hnet_copy,criterion,pb,pf,cfg,test_loader,device)   
+        # targets_test = np.array(targets_test, dtype='float32').reshape(rays_test.shape[0],n_tasks)
+        # results_test = np.array(results_test, dtype='float32').reshape(rays_test.shape[0],n_tasks)
+        # med_test = MED(targets_test, results_test)
+        # print("PARAM:{}, MED:{}".format(str(param),str(med_test)))
+        # MEDS.append(med_test)
+        MEDS = np.array(MEDS)
+        #PARAMS = np.array(PARAMS)
+    return MEDS

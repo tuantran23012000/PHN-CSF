@@ -7,7 +7,7 @@ class CS_functions():
         self.losses = losses
         self.ray = ray
     def linear_function(self):
-        ls = (self.losses * self.ray).sum()
+        ls = torch.sum(torch.mul(self.ray, self.losses.T),dim = 1)
         return ls
 
     def log_function(self):
@@ -47,8 +47,7 @@ class CS_functions():
         return U
 
     def chebyshev_function(self):
-        #cheby = torch.amax(self.losses * self.ray,dim=1)
-        cheby = max(self.losses * self.ray)
+        cheby = torch.amax(torch.mul(self.ray, self.losses.T),dim = 1)
         
         return cheby
 

@@ -17,7 +17,7 @@ import copy
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 def train_epoch(device, cfg, criterion, pb,pf,model_type):
-    print(model_type)
+    print("Model type: ",model_type)
     name = cfg['NAME']
     mode = cfg['MODE']
     if model_type == 'mlp':

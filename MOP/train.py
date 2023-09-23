@@ -50,19 +50,25 @@ def train_epoch(device, cfg, criterion, pb,pf,model_type):
     print("Train size: ",rays_train.shape)
     print("Val size: ",rays_eval.shape)
     print("Test size: ",rays_test.shape)
-    #rays_train = torch.from_numpy(rays_train).float()
-    #rays_eval = torch.from_numpy(rays_eval).float()
-    #train_dt = torch.utils.data.TensorDataset(rays_train)
-    #val_dt = torch.utils.data.TensorDataset(rays_eval)
-    
-    # train_loader = torch.utils.data.DataLoader(
-    #     dataset=train_dt,
-    #     batch_size=1,num_workers=4,
-    #     shuffle=True)
-    # val_loader = torch.utils.data.DataLoader(
-    #     dataset=train_dt,
-    #     batch_size=1,num_workers=4,
-    #     shuffle=False)
+    rays_train = torch.from_numpy(rays_train).float()
+    rays_eval = torch.from_numpy(rays_eval).float()
+    rays_test = torch.from_numpy(rays_test).float()
+    train_dt = torch.utils.data.TensorDataset(rays_train)
+    val_dt = torch.utils.data.TensorDataset(rays_eval)
+    test_dt = torch.utils.data.TensorDataset(rays_test)
+    bs = 100
+    train_loader = torch.utils.data.DataLoader(
+        dataset=train_dt,
+        batch_size=bs,num_workers=4,
+        shuffle=True)
+    val_loader = torch.utils.data.DataLoader(
+        dataset=val_dt,
+        batch_size=bs,num_workers=4,
+        shuffle=False)
+    test_loader = torch.utils.data.DataLoader(
+        dataset=test_dt,
+        batch_size=bs,num_workers=4,
+        shuffle=False)
     
     PARAMS = []
     MEDS = []

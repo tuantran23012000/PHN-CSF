@@ -60,10 +60,17 @@ Tran Anh Tuan
 ## Citation
 If our framework is useful for your research, please consider to cite the paper:
 ```
-@article{tran2023framework,
-  title={A framework for controllable pareto front learning with completed scalarization functions and its applications},
-  author={Tran, Tuan Anh and Hoang, Long Phi and Le, Dung Duy and Tran, Thang Ngoc},
-  journal={arXiv preprint arXiv:2302.12487},
-  year={2023}
+@article{TUAN2024257,
+title = {A framework for controllable Pareto front learning with completed scalarization functions and its applications},
+journal = {Neural Networks},
+volume = {169},
+pages = {257-273},
+year = {2024},
+issn = {0893-6080},
+doi = {https://doi.org/10.1016/j.neunet.2023.10.029},
+url = {https://www.sciencedirect.com/science/article/pii/S089360802300583X},
+author = {Tran Anh Tuan and Long P. Hoang and Dung D. Le and Tran Ngoc Thang},
+keywords = {Multi-objective optimization, Multi-task learning, Pareto front learning, Scalarization problem, Hypernetwork},
+abstract = {Pareto Front Learning (PFL) was recently introduced as an efficient method for approximating the entire Pareto front, the set of all optimal solutions to a Multi-Objective Optimization (MOO) problem. In the previous work, the mapping between a preference vector and a Pareto optimal solution is still ambiguous, rendering its results. This study demonstrates the convergence and completion aspects of solving MOO with pseudoconvex scalarization functions and combines them into Hypernetwork in order to offer a comprehensive framework for PFL, called Controllable Pareto Front Learning. Extensive experiments demonstrate that our approach is highly accurate and significantly less computationally expensive than prior methods in term of inference time.}
 }
 ```

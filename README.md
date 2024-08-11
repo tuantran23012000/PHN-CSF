@@ -5,7 +5,7 @@
   <a href="https://arxiv.org/abs/2302.12487" target="_blank"><img src="https://img.shields.io/badge/arXiv-2302.12487-009688.svg" alt="arXiv"></a>
 </p>
 
-This is the official implementation for [Paper](https://arxiv.org/abs/2302.12487)  
+This is the official implementation for [Paper](https://www.sciencedirect.com/science/article/abs/pii/S089360802300583X)  
 
 <img src="src/1.jpg" alt=”Image” style="width:1200px;height:400px;">
 

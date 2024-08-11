@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-1.8 %20%7C%201.12 %20%7C%202.0-673ab7.svg" alt="Tested PyTorch Versions"></a>
-  <a href="https://arxiv.org/abs/2302.12487" target="_blank"><img src="https://img.shields.io/badge/arXiv-2302.12487-009688.svg" alt="arXiv"></a>
+  <a href="[https://arxiv.org/abs/2302.12487](https://www.sciencedirect.com/science/article/abs/pii/S089360802300583X)" target="_blank"><img src="https://img.shields.io/badge/arXiv-2302.12487-009688.svg" alt="Neural Networks"></a>
 </p>
 
 This is the official implementation for [Paper](https://www.sciencedirect.com/science/article/abs/pii/S089360802300583X)  
